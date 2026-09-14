@@ -24,14 +24,21 @@ data/*.db-shm
 # Large MP4 Video Files (>100MB GitHub limit)
 *.mp4
 
-# Raw Dataset Images & Labels (Preserves data.yaml, specs, reports & weights)
-anpr/anpr/
-anpr/ocr/
-anpr/runs/
-potholes_info/potholes/
-potholes_info/runs/
-runs/
-data/pothole_dataset/
+# Root runs directory
+/runs/
+/data/pothole_dataset/
+
+# Raw Dataset Images & Heavy Weight Dumps (Preserves data.yaml, evaluation plots, reports & models)
+/anpr/anpr/
+/anpr/ocr/
+/anpr/runs/*
+!/anpr/runs/anpr_detection_v1/
+/anpr/runs/anpr_detection_v1/weights/
+
+/potholes_info/potholes/
+/potholes_info/runs/*
+!/potholes_info/runs/multiclass_road_damage_final/
+/potholes_info/runs/multiclass_road_damage_final/weights/
 
 # Private AI Handover Instructions (Do NOT push to GitHub)
 AGENTS.md

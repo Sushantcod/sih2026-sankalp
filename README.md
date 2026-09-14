@@ -11,7 +11,7 @@
 
 ---
 
-> 💡 **Smart City Prototype**: A unified computer-vision platform that converts real-time road defects, vehicle counts, and license plate observations into normalized telemetry events, persisted via FastAPI & SQLite, and managed through an operator-focused Incident Operations Command Center.
+> 💡 **Smart City Prototype**: A computer-vision-driven Smart City prototype that converts real-world road defects, vehicle counts, and license plate observations into structured events, persists them through a FastAPI backend & SQLite database, and provides an operator-focused Command Center for incident management.
 
 ---
 
@@ -85,23 +85,119 @@ flowchart LR
 
 ---
 
-## 🤖 Computer Vision & AI Subsystems
+## 🤖 AI & Computer Vision Subsystems & Performance Evaluation
+
+> Model metrics are presented alongside real evaluation artifacts wherever available so that performance claims remain fully traceable to empirical held-out benchmark experiments.
+
+---
 
 ### 1. Road Damage Detection Subsystem
+
 - **Model File**: [`models/pothole.pt`](models/pothole.pt) | **SHA256**: `947ee609f36878b4224ade120c359658539dcbec609980f689b397db487b877b`
 - **Supported Defect Classes**: `longitudinal_crack`, `transverse_crack`, `alligator_crack`, `pothole`, `manhole`, `waterlogging`.
-- **Benchmark Performance**: 51.60% mAP50 across 6 classes on held-out test data (54.32% precision, 46.33% recall).
-- **Real Video Ingestion**: 2,708 telemetry records stored in SQLite from `BUS-101` dashcam feed.
+- **Dataset**: 2,467 annotated road defect images (80% train, 10% val, 10% held-out test).
+
+#### Held-out Benchmark Test Metrics
+
+| Evaluation Metric | Held-out Test Benchmark Result |
+| :--- | :---: |
+| **Precision** | **54.32%** |
+| **Recall** | **46.33%** |
+| **mAP50** | **51.60%** |
+| **mAP50-95** | **26.40%** |
+
+*Note: Metrics represent strict evaluation on held-out test data.*
+
+#### Road Damage — Confusion Matrix
+The confusion matrix below demonstrates class localization across the 6 defect categories:
+
+![Road Damage Confusion Matrix](potholes_info/runs/multiclass_road_damage_final/confusion_matrix.png)
+
+*Figure 1: Verified confusion matrix for the 6-class Road Damage model (`models/pothole.pt`).*
+
+#### Road Damage — Precision-Recall (PR) Curve
+![Road Damage PR Curve](potholes_info/runs/multiclass_road_damage_final/BoxPR_curve.png)
+
+*Figure 2: Precision-Recall curve across all defect classes.*
+
+#### Road Damage — Training & Validation Loss Curves
+![Road Damage Training Results](potholes_info/runs/multiclass_road_damage_final/results.png)
+
+*Figure 3: Loss curves and mAP evolution across training epochs.*
+
+#### Real Video Observation (`BUS-101`)
+On a 15-second, 375-frame sample dashcam video (`data/sample_videos/patholes.mp4`), the model observed **1,001 pothole detections** and **4 manhole detections**, producing 2,708 telemetry records stored in `data/events.db`.
+
+![Real Video Detection Output](potholes_info/screenshots/real_video/real_video_multi_pothole_01.jpg)
+
+*Figure 4: Real dashcam video frame showing multi-pothole detections.*
+
+---
 
 ### 2. Vehicle Density & ByteTrack Multi-Object Tracking
-- **Model File**: [`models/yolov8n.pt`](models/yolov8n.pt) | **SHA256**: `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36`
-- **Tracked Classes**: `car`, `bus`, `truck`, `motorcycle`.
-- **Evaluation Mechanism**: Aggregates unique tracked object IDs across 10-second rolling evaluation windows, excluding untracked raw detections to prevent double-counting.
 
-### 3. ANPR & OCR Subsystem
+- **Model File**: [`models/yolov8n.pt`](models/yolov8n.pt) | **SHA256**: `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36`
+- **Tracked Object Classes**: `car`, `bus`, `truck`, `motorcycle`.
+- **Counting Methodology**: Aggregates unique tracked object IDs across 10-second rolling evaluation windows to compute road segment vehicle counts and congestion levels. Untracked raw detections are excluded to prevent double-counting stationary or slow-moving vehicles.
+- **Empirical Video Benchmark**: On a 24-second real sample video (`traffic_density_bridge.mp4`), ByteTrack tracked **91 unique vehicles** across 3 rolling windows.
+
+---
+
+### 3. ANPR License Plate Localization Subsystem
+
 - **Model File**: [`models/anpr/best.pt`](models/anpr/best.pt) | **SHA256**: `d9584abdd286828d6ca0e504ace2c765dd7e66851647d8ba4ad03416f53ecf6a`
-- **Plate Localizer Performance**: 98.04% mAP50 on 1,651 Indian plate benchmark crops (98.18% precision, 95.78% recall).
-- **Real Video Ingestion**: 5,256 plate detection records stored in SQLite from `anpr.mp4` stream.
+- **Dataset**: 1,651 Indian license plate crop benchmark images.
+
+#### Held-out Benchmark Test Metrics
+
+| Evaluation Metric | Held-out Test Benchmark Result |
+| :--- | :---: |
+| **Precision** | **98.18%** |
+| **Recall** | **95.78%** |
+| **mAP50** | **98.04%** |
+| **mAP50-95** | **70.42%** |
+
+#### ANPR Plate Localizer — Confusion Matrix
+![ANPR Confusion Matrix](anpr/runs/anpr_detection_v1/confusion_matrix.png)
+
+*Figure 5: High-precision confusion matrix for the ANPR Plate Localizer model (`models/anpr/best.pt`).*
+
+#### ANPR Plate Localizer — Precision-Recall Curve
+![ANPR PR Curve](anpr/runs/anpr_detection_v1/BoxPR_curve.png)
+
+*Figure 6: Precision-Recall curve demonstrating 98.04% mAP50 localization accuracy.*
+
+#### ANPR Plate Localizer — Training & Validation Results
+![ANPR Results Plot](anpr/runs/anpr_detection_v1/results.png)
+
+*Figure 7: Training & validation metrics for the ANPR plate detector.*
+
+---
+
+### 4. Optical Character Recognition (EasyOCR)
+
+Plate localization is paired with EasyOCR for text extraction:
+
+| OCR Metric | Benchmark Result | Operational Interpretation |
+| :--- | :---: | :--- |
+| **Character Accuracy** | **20.14%** | Individual character recognition rate |
+| **Exact Match Accuracy** | **7.51%** | Full plate text exact string match |
+| **Character Error Rate (CER)** | **79.86%** | Normalized edit distance across predictions |
+
+> *Note: OCR evaluation is reported numerically because a verified visual confusion-matrix artifact is not available in the repository.*
+
+**Important Technical Distinction**: Plate localization is extremely accurate (**98.04% mAP50**), but character OCR accuracy is a recognized technical limitation on Indian license plates. Recognized text strings are treated as candidate reads, not validated vehicle registrations.
+
+---
+
+### 📊 Verified AI Results Summary
+
+| AI Subsystem | Benchmark Dataset / Input | Primary Metric | Model Status |
+| :--- | :--- | :---: | :--- |
+| **Road Damage Detection** | 2,467 Road Damage Images | **mAP50: 51.60%** | ✅ Verified (`models/pothole.pt`) |
+| **ANPR Plate Localizer** | 1,651 Indian Plate Crops | **mAP50: 98.04%** | ✅ Verified (`models/anpr/best.pt`) |
+| **Vehicle Density Tracking** | COCO YOLOv8n + ByteTrack | **91 Unique Vehicles / 24s** | ✅ Verified (`models/yolov8n.pt`) |
+| **EasyOCR Character Read** | Indian Plate OCR Benchmark | **Char Acc: 20.14%** | ⚠️ Recognized Limitation |
 
 ---
 
@@ -225,7 +321,7 @@ python tests/test_dashboard.py
 - [`docs/DATASETS.md`](docs/DATASETS.md) — Dataset Provenance & Label Specs.
 - [`docs/DATA_INTEGRITY.md`](docs/DATA_INTEGRITY.md) — Zero Fabrication Policy & Checksum Baselines.
 - [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — 5-to-10 Minute Judge Demonstration Script.
-- [`docs/SIH_PRESENTATION.md`](docs/SIH_PRESENTATION.md) — 20-Slide Presentation Deck Structure.
+- [`docs/SIH_PRESENTATION.md`](docs/SIH_PRESENTATION.md) — 20-Slide Hackathon Presentation Structure.
 - [`docs/JUDGE_QA.md`](docs/JUDGE_QA.md) — 20 Judge Q&A Defense Questions & Answers.
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Local, Docker & Cloud Deployment Guide.
 - [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — Capability Development Matrix.
