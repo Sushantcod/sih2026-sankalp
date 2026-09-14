@@ -54,8 +54,20 @@ data/*.db-shm
 # Scratch & Temporary Scripts
 scratch/
 
+# Internal Subsystem & Dataset Documentation Reports (Excluded from public repo)
+/anpr/documentation/
+/potholes_info/*.md
+/pedestrian_info/documentation/
+/infrastructure_info/documentation/
+docs/MASTER_PLAN.md
+docs/PROJECT_AUDIT.md
+docs/FINAL_PROJECT_VERIFICATION.md
+docs/CLEANUP_REPORT.md
+docs/CLEANUP_NOTES.md
+
 # Private AI Handover Instructions (Do NOT push to GitHub)
 AGENTS.md
 agent.md
+
 
 
