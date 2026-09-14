@@ -43,8 +43,11 @@ data/*.db-shm
 # Internal Subsystem & Dataset Documentation Reports (Excluded from public repo)
 /anpr/documentation/
 /potholes_info/*.md
+docs/MASTER_PLAN.md
+docs/PROJECT_AUDIT.md
 
 # Private AI Handover Instructions (Do NOT push to GitHub)
 AGENTS.md
 agent.md
+
 

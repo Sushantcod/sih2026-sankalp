@@ -360,7 +360,6 @@ python tests/test_dashboard.py
 
 ## 📚 Complete Documentation Index
 
-- [`docs/PROJECT_AUDIT.md`](docs/PROJECT_AUDIT.md) — Comprehensive System Audit Report.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — System Flowcharts & 9 Mermaid Diagrams.
 - [`docs/AI_PIPELINE.md`](docs/AI_PIPELINE.md) — AI Model Specifications & Metrics.
 - [`docs/API.md`](docs/API.md) — Central Backend REST API Reference.
