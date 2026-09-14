@@ -40,6 +40,11 @@ data/*.db-shm
 !/potholes_info/runs/multiclass_road_damage_final/
 /potholes_info/runs/multiclass_road_damage_final/weights/
 
+# Internal Subsystem & Dataset Documentation Reports (Excluded from public repo)
+/anpr/documentation/
+/potholes_info/*.md
+
 # Private AI Handover Instructions (Do NOT push to GitHub)
 AGENTS.md
 agent.md
+
