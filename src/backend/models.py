@@ -1,9 +1,12 @@
+import os
 import json
 import hashlib
 import sqlite3
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, Tuple, List
 from src.backend.database import get_db_connection
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 def extract_normalized_fields(raw_dict: Dict[str, Any]) -> Tuple[str, str, Optional[str], Optional[str], Optional[float], Optional[float], Optional[float], Dict[str, Any]]:
     """Extract normalized fields from raw event payload while preserving 100% of original source dict."""
@@ -193,11 +196,11 @@ def get_database_stats() -> Dict[str, Any]:
 # Incident Database Operations
 
 VALID_TRANSITIONS = {
-    "OPEN": {"ACKNOWLEDGED", "IN_PROGRESS", "RESOLVED", "CLOSED"},
-    "ACKNOWLEDGED": {"IN_PROGRESS", "RESOLVED", "CLOSED"},
-    "IN_PROGRESS": {"RESOLVED", "CLOSED"},
-    "RESOLVED": {"CLOSED", "OPEN"},
-    "CLOSED": {"OPEN"}
+    "OPEN": {"ACKNOWLEDGED"},
+    "ACKNOWLEDGED": {"IN_PROGRESS"},
+    "IN_PROGRESS": {"RESOLVED"},
+    "RESOLVED": {"CLOSED"},
+    "CLOSED": set()
 }
 
 def create_incident(
@@ -529,4 +532,187 @@ def get_incident_stats() -> Dict[str, Any]:
         "count_by_severity": count_by_severity,
         "count_by_event_type": count_by_event_type
     }
+
+
+def get_analytics_traffic() -> Dict[str, Any]:
+    """Query traffic volume, class distribution, and telemetry availability indicators."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Total events count
+    cursor.execute("SELECT COUNT(*) as total FROM events")
+    total_events = cursor.fetchone()["total"]
+
+    # Event count by type
+    cursor.execute("SELECT event_type, COUNT(*) as cnt FROM events GROUP BY event_type ORDER BY cnt DESC")
+    count_by_type = {r["event_type"]: r["cnt"] for r in cursor.fetchall()}
+
+    # Event count by source
+    cursor.execute("SELECT source, COUNT(*) as cnt FROM events GROUP BY source ORDER BY cnt DESC")
+    count_by_source = {r["source"]: r["cnt"] for r in cursor.fetchall()}
+
+    # Road damage defect breakdown
+    damage_types = {"pothole", "alligator_crack", "longitudinal_crack", "transverse_crack", "manhole", "waterlogging"}
+    total_road_defects = sum(count_by_type.get(dt, 0) for dt in damage_types)
+
+    # ANPR events count
+    total_anpr_plates = count_by_type.get("plate_detected", 0) + count_by_type.get("anpr", 0)
+
+    # Vehicle counts aggregation from vehicle_count payloads
+    cursor.execute("SELECT payload_json FROM events WHERE event_type IN ('vehicle_count', 'congestion')")
+    veh_rows = cursor.fetchall()
+    
+    class_distribution = {"car": 0, "bus": 0, "truck": 0, "motorcycle": 0}
+    total_vehicles_counted = 0
+
+    for r in veh_rows:
+        try:
+            p = json.loads(r["payload_json"])
+            vc = p.get("vehicle_counts", {})
+            for v_class, cnt in vc.items():
+                if v_class in class_distribution:
+                    class_distribution[v_class] += int(cnt)
+            total_vehicles_counted += int(p.get("total_vehicle_count", 0))
+        except Exception:
+            pass
+
+    conn.close()
+
+    return {
+        "total_events": total_events,
+        "total_road_defects": total_road_defects,
+        "total_anpr_plates": total_anpr_plates,
+        "total_vehicles_counted": total_vehicles_counted,
+        "count_by_type": count_by_type,
+        "count_by_source": count_by_source,
+        "class_distribution": class_distribution,
+        "data_availability": {
+            "od_analysis": "O-D Analysis Unavailable — insufficient spatial trajectory telemetry.",
+            "route_delay": "Route Delay Unavailable — insufficient route/time telemetry.",
+            "road_impact_correlation": "Correlation not established — location telemetry unavailable.",
+            "gps_telemetry": "GPS Telemetry Unavailable",
+            "speed_telemetry": "Unavailable — required telemetry not present."
+        }
+    }
+
+
+def get_analytics_summary() -> Dict[str, Any]:
+    """Retrieve high-level summary analytics for dashboard and reports."""
+    analytics = get_analytics_traffic()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) as total FROM incidents")
+    total_incidents = cursor.fetchone()["total"]
+    conn.close()
+
+    analytics["total_incidents"] = total_incidents
+    return analytics
+
+
+def get_pedestrian_analytics() -> Dict[str, Any]:
+    """Query pedestrian safety analytics and telemetry availability indicators."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) as total FROM events WHERE event_type IN ('person', 'pedestrian', 'pedestrian_detected', 'crosswalk_detected')")
+    person_events = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) as total FROM events WHERE event_type = 'crosswalk_detected'")
+    crossing_events = cursor.fetchone()["total"]
+    conn.close()
+
+    model_path = os.path.join(PROJECT_ROOT, "models/pedestrian/pedestrian_detector.pt")
+    has_model = os.path.exists(model_path)
+
+    if has_model:
+        return {
+            "status": "active",
+            "indicator": "PEDESTRIAN SAFETY ANALYTICS",
+            "person_events_logged": person_events,
+            "crossing_events_logged": crossing_events,
+            "model_status": "SUPPORTED — Dedicated Phase 8 Pedestrian Detector",
+            "model_path": "models/pedestrian/pedestrian_detector.pt",
+            "trained_dataset": "smart-crossing-version-1 (7,737 images)",
+            "supported_classes": ["crossing", "pedestrian", "vehicle"],
+            "message": "Phase 8 Pedestrian & Crosswalk Safety Analytics Active",
+            "data_availability": {
+                "custom_pedestrian_model": "SUPPORTED — Phase 8 YOLOv8 model trained on 7,737 images",
+                "pedestrian_detection": "SUPPORTED — 3-class YOLOv8 model",
+                "vehicle_detection": "SUPPORTED — 3-class YOLOv8 model",
+                "crossing_detection": "SUPPORTED — 3-class YOLOv8 crosswalk detection",
+                "school_zone_context": "School-Zone Context Unavailable — location metadata missing",
+                "pedestrian_risk_assessment": "Pedestrian Risk Assessment — Insufficient ground truth risk labels",
+                "gps_telemetry": "GPS Telemetry Unavailable"
+            }
+        }
+    else:
+        return {
+            "status": "unavailable",
+            "indicator": "PEDESTRIAN SAFETY ANALYTICS",
+            "person_events_logged": person_events,
+            "crossing_events_logged": crossing_events,
+            "pretrained_capability": "COCO Base YOLOv8n Class 0 (person) detection enabled",
+            "message": "Pedestrian Analytics — Custom Dataset/Model Unavailable",
+            "data_availability": {
+                "custom_pedestrian_model": "Pedestrian Analytics — Custom Dataset/Model Unavailable",
+                "school_zone_context": "School-Zone Context Unavailable — location metadata missing",
+                "pedestrian_risk_assessment": "Pedestrian Risk Assessment — Insufficient telemetry",
+                "crossing_analytics": "Crossing Analytics Unavailable — spatial crossing lines missing",
+                "gps_telemetry": "GPS Telemetry Unavailable"
+            }
+        }
+
+
+def get_infrastructure_analytics() -> Dict[str, Any]:
+    """Query infrastructure and traffic sign analytics and telemetry availability indicators."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) as total FROM events WHERE event_type = 'traffic_sign_detected'")
+    sign_events = cursor.fetchone()["total"]
+    conn.close()
+
+    model_path = os.path.join(PROJECT_ROOT, "models/infrastructure/infrastructure_detector.pt")
+    has_model = os.path.exists(model_path)
+
+    if has_model:
+        return {
+            "status": "active",
+            "indicator": "INFRASTRUCTURE & TRAFFIC-SIGN INTELLIGENCE",
+            "traffic_sign_events_logged": sign_events,
+            "model_status": "SUPPORTED — Dedicated Phase 9 Infrastructure Detector",
+            "model_path": "models/infrastructure/infrastructure_detector.pt",
+            "trained_dataset": "Infrastructure/indian traffic sign dataset (10,192 images)",
+            "class_count": 57,
+            "message": "Phase 9 Infrastructure & Traffic Sign Intelligence Active",
+            "data_availability": {
+                "traffic_sign_detection": "SUPPORTED — 57-class YOLOv8 model",
+                "regulatory_signs": "SUPPORTED — Speed Limit, Stop, Give Way, No Entry, etc.",
+                "warning_signs": "SUPPORTED — Curve Ahead, Narrow Bridge, Slippery Road, etc.",
+                "pedestrian_crossing_signs": "SUPPORTED — Pedestrian Crossing sign class",
+                "school_ahead_signs": "SUPPORTED — School Ahead sign class",
+                "traffic_signals": "SUPPORTED — Traffic_signal class",
+                "broken_streetlights": "Broken Streetlights Detection — Unavailable in dataset",
+                "damaged_traffic_signals": "Damaged Traffic Signals Detection — Unavailable in dataset",
+                "road_quality_assessment": "Road Quality Assessment — Handled by Phase 1 (Road Damage)",
+                "infrastructure_maintenance_prediction": "Infrastructure Maintenance Prediction — Unavailable",
+                "gps_infrastructure_mapping": "GPS Infrastructure Mapping — GPS Telemetry Unavailable",
+                "automatic_repair_recommendations": "Automatic Repair Recommendations — Unavailable"
+            }
+        }
+    else:
+        return {
+            "status": "unavailable",
+            "indicator": "INFRASTRUCTURE & TRAFFIC-SIGN INTELLIGENCE",
+            "traffic_sign_events_logged": sign_events,
+            "message": "Infrastructure Model Unavailable",
+            "data_availability": {
+                "traffic_sign_detection": "Infrastructure Model Unavailable",
+                "broken_streetlights": "Unavailable",
+                "gps_telemetry": "GPS Telemetry Unavailable"
+            }
+        }
+
+
+
 

@@ -27,7 +27,11 @@ from src.backend.models import (
     get_incident_by_id,
     update_incident,
     add_incident_note,
-    get_incident_stats
+    get_incident_stats,
+    get_analytics_traffic,
+    get_analytics_summary,
+    get_pedestrian_analytics,
+    get_infrastructure_analytics
 )
 
 router = APIRouter()
@@ -214,4 +218,57 @@ def get_single_incident_history(incident_id: str = Path(..., description="Incide
     if not inc:
         raise HTTPException(status_code=404, detail=f"Incident '{incident_id}' not found")
     return inc["history"]
+
+# Analytics Endpoints (Phase 7)
+
+@router.get("/analytics/traffic", summary="Get Traffic Volume & Distribution Analytics")
+def get_analytics_traffic_endpoint():
+    return get_analytics_traffic()
+
+@router.get("/analytics/summary", summary="Get System Analytics Summary & Telemetry Indicators")
+def get_analytics_summary_endpoint():
+    return get_analytics_summary()
+
+@router.get("/analytics/od", summary="Get Origin-Destination Analysis Status")
+def get_analytics_od_endpoint():
+    return {
+        "status": "unavailable",
+        "indicator": "O-D ANALYSIS",
+        "message": "O-D Analysis Unavailable — insufficient spatial trajectory telemetry.",
+        "requirement": "Requires multi-camera spatial trajectory tracking across physical road network"
+    }
+
+@router.get("/analytics/delay", summary="Get Route Delay Analysis Status")
+def get_analytics_delay_endpoint():
+    return {
+        "status": "unavailable",
+        "indicator": "ROUTE DELAY",
+        "message": "Route Delay Unavailable — insufficient route/time telemetry.",
+        "requirement": "Requires vehicle entry/exit timestamps across known route segments"
+    }
+
+# Phase 8 Pedestrian Analytics Endpoints
+
+@router.get("/analytics/pedestrians", summary="Get Pedestrian Analytics & Availability Indicators")
+def get_analytics_pedestrians_endpoint():
+    return get_pedestrian_analytics()
+
+@router.get("/analytics/pedestrians/safety", summary="Get School-Zone & Pedestrian Risk Assessment Status")
+def get_analytics_pedestrians_safety_endpoint():
+    return {
+        "status": "unavailable",
+        "indicator": "SCHOOL-ZONE & PEDESTRIAN RISK",
+        "school_zone_status": "School-Zone Context Unavailable — location metadata missing",
+        "risk_assessment_status": "Pedestrian Risk Assessment — Insufficient telemetry",
+        "crossing_analytics_status": "Crossing Analytics Unavailable — spatial crossing lines missing"
+    }
+
+# Phase 9 Infrastructure & Traffic Sign Analytics Endpoints
+
+@router.get("/analytics/infrastructure", summary="Get Infrastructure & Traffic Sign Analytics & Availability Indicators")
+def get_analytics_infrastructure_endpoint():
+    return get_infrastructure_analytics()
+
+
+
 

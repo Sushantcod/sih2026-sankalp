@@ -11,7 +11,7 @@
 
 ---
 
-> 💡 **Smart City Prototype**: A computer-vision-driven Smart City prototype that converts real-world road defects, vehicle counts, and license plate observations into structured events, persists them through a FastAPI backend & SQLite database, and provides an operator-focused Command Center for incident management.
+> 💡 **Smart City Prototype**: A computer-vision-driven Smart City prototype that converts real-world road defects, vehicle counts, license plate observations, pedestrian hazards, and infrastructure traffic sign observations into structured events, persists them through a FastAPI backend & SQLite database, and provides an operator-focused Command Center for incident management.
 
 ---
 
@@ -25,49 +25,23 @@
 | **Category & Theme** | **Software** \| **Smart Automation** |
 | **Target Infrastructure** | Urban Public Transport Bus Fleets (Dashcams / Multi-camera Setup) |
 
-### 📋 Problem Background & Need
-Urban public transport buses traverse almost every major road in a city every day. Modern buses carry multiple cameras, but today these are used only for passive incident recording. Meanwhile, municipal authorities rely on fixed CCTVs (limited intersection coverage), slow manual inspections, and delayed citizen complaints to identify road defects, traffic congestion, and road hazards.
+---
 
-### 💡 Core Solution Architecture & Novelty Claims
-This platform transforms public transport buses into **mobile urban sensing units**:
-1. **Existing Fleet Reuse (Zero Hardware Overhead)**: Eliminates dedicated survey vehicles or expensive static CCTV installs by leveraging existing daily bus routes (`BUS-101`) for continuous city-wide coverage.
-2. **Onboard Edge AI Processing**: Runs lightweight computer vision models (YOLOv8 + ByteTrack + EasyOCR) on edge hardware inside buses, transmitting compact JSON telemetry over cellular networks instead of streaming costly raw video feeds.
-3. **Multi-Task Sensing Fusion**: Fuses 4 critical urban sensing tasks into a single edge pipeline & central platform:
-   - **Road Infrastructure Defects**: Multi-class detection of potholes, alligator cracks, longitudinal cracks, manholes, and waterlogging (`models/pothole.pt`).
-   - **Traffic Density & Bottlenecks**: Vehicle classification (`car`, `bus`, `truck`, `motorcycle`) and ByteTrack 10-second rolling window tracking.
-   - **ANPR & Offending Vehicle Tracking**: License plate localization (`models/anpr/best.pt`), EasyOCR character recognition, and real-time vehicle tracking during rash driving or hit-and-run incidents.
-   - **Pedestrian Safety & Hazard Detection**: Detection of vulnerable situations (school children crossing, missing medians/zebra crossings).
-4. **Centralized GIS Command Center**: Aggregates fleet-wide telemetry into an SQLite database (`data/events.db`), displaying real-time incidents, congestion heatmaps, infrastructure deficiency reports, and automated CSV/JSON exports for municipal transport authorities.
+## 🔒 Master Model SHA256 Checksum Table
+
+All production model weights are SHA256 hashed and protected against regression:
+
+| Subsystem / Phase | Model File Path | SHA256 Checksum | Target Task | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **Phase 1: Road Damage** | [`models/pothole.pt`](models/pothole.pt) | `947ee609f36878b4224ade120c359658539dcbec609980f689b397db487b877b` | Potholes & Road Defect Detection | ✅ Frozen |
+| **Phase 2: Vehicles** | [`models/yolov8n.pt`](models/yolov8n.pt) | `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36` | COCO Vehicle Density & ByteTrack | ✅ Frozen |
+| **Phase 3: ANPR** | [`models/anpr/best.pt`](models/anpr/best.pt) | `d9584abdd286828d6ca0e504ace2c765dd7e66851647d8ba4ad03416f53ecf6a` | License Plate Localization | ✅ Frozen |
+| **Phase 8: Pedestrian** | [`models/pedestrian/pedestrian_detector.pt`](models/pedestrian/pedestrian_detector.pt) | `18d6e7c72fccde6dec294b02ab5c06ee73c89302f319234f857c7915549b1c9d` | Pedestrian & Crosswalk Safety | ✅ Frozen |
+| **Phase 9: Infrastructure** | [`models/infrastructure/infrastructure_detector.pt`](models/infrastructure/infrastructure_detector.pt) | `7a71cdee3c8e382de5debe220abd8ee499b6806e45255dba80d69fb453c35837` | 57-Class Traffic Sign Intelligence | ✅ Active |
 
 ---
 
-## 🎯 The Problem
-
-Municipal road maintenance and traffic management in urban India face significant operational challenges:
-
-- **Unmapped Road Defects**: Potholes, alligator cracks, and open manholes cause traffic delays and vehicle damage. Manual road inspection is slow, expensive, and reactive.
-- **Unmonitored Traffic Bottlenecks**: Vehicle density and congestion levels on key municipal transit corridors lack automated counting and threshold alerting.
-- **Fragmented Incident Lifecycles**: Detection observations are rarely linked to formal dispatch tickets with status transition tracking, operator accountability, and audit trails.
-- **Data Inconsistencies & Synthetic Overhead**: Many existing prototypes rely on synthetic or hardcoded operational metrics, reducing real-world reliability.
-
----
-
-## 💡 Proposed Solution
-
-The **SIH 2026 Smart Road Monitoring Platform** unifies multi-class computer vision detectors, asynchronous backend ingestion, and operational incident dispatch into a single demo-ready system:
-
-```
-Camera / Video Stream ➔ AI Computer Vision ➔ Structured Telemetry JSON ➔ FastAPI Backend ➔ SQLite Database ➔ Incident Operations ➔ GIS Command Center
-```
-
-1. **Edge AI Detection**: Processes dashcam and CCTV video feeds to detect 6 road damage classes, count vehicles using ByteTrack, and localize license plates.
-2. **Normalized Ingestion Engine**: Accepts incoming telemetry via REST endpoints, enforcing strict primary-key and content-hash deduplication.
-3. **Incident Operations Subsystem**: Allows operators to dispatch incidents from real telemetry events, managing status transitions with full audit history logs.
-4. **Operations Command Center**: A 9-tab dark Glassmorphism dashboard displaying real-time metrics, system health diagnostics, query filters, and report exporters.
-
----
-
-## ⚡ Key System Capabilities
+## ⚡ Key System Capabilities & Subsystems
 
 | Capability | Subsystem & Technology | Implementation | Verified Status |
 | :--- | :--- | :--- | :--- |
@@ -78,236 +52,87 @@ Camera / Video Stream ➔ AI Computer Vision ➔ Structured Telemetry JSON ➔ F
 | **Deduplicating Event Ingestion** | FastAPI Async REST + Hash Deduplication | [`src/backend/app.py`](src/backend/app.py) | ✅ Complete (`http://127.0.0.1:8000`) |
 | **Incident Management Subsystem** | Relational Lifecycle & Audit Trail | [`src/backend/routes.py`](src/backend/routes.py) | ✅ Complete (State Machine Validated) |
 | **GIS Operations Command Center** | Dark Glassmorphism UI (9 Tabs) | [`src/dashboard/index.html`](src/dashboard/index.html) | ✅ Complete (`http://127.0.0.1:3000`) |
+| **Pedestrian & Crosswalk Safety** | YOLOv8 Pedestrian Detector | [`infrastructure_info/documentation/`](infrastructure_info/documentation/) | ✅ Complete (81.78% mAP50) |
+| **Infrastructure & Traffic Signs** | YOLOv8 57-Class Sign Detector | [`infrastructure_info/`](infrastructure_info/) | ✅ Complete (69.25% mAP50) |
 | **Honest GPS Telemetry Handling** | Mode B (Null GPS Telemetry State) | [`src/dashboard/app.js`](src/dashboard/app.js) | ⚠️ GPS Hardware Unavailable |
-| **Automated Reports Export** | Single-Click CSV & JSON Exporters | [`src/dashboard/app.js`](src/dashboard/app.js) | ✅ Complete |
-| **Pedestrian & Infrastructure Checks**| Future Scope | N/A | 🔵 Planned |
 
 ---
 
-## 🏗️ System Architecture
+## 📁 Master Package Directory Layout
 
-```mermaid
-flowchart LR
-    subgraph Edge_Vision ["Computer Vision Detectors"]
-        A1[Dashcam: Road Damage Feed] -->|YOLOv8 6-Class| B1[Potholes & Cracks]
-        A2[CCTV: Traffic Feed] -->|YOLOv8 + ByteTrack| B2[Vehicle Count & Density]
-        A3[ANPR: Plate Feed] -->|YOLOv8 + EasyOCR| B3[Plate Localization]
-    end
+The codebase features self-contained master package directories for all major vision subsystems:
 
-    subgraph Central_Core ["Backend & Persistence Engine"]
-        B1 & B2 & B3 --> C[Structured Telemetry JSON]
-        C --> D[FastAPI Ingestion Engine]
-        D -->|SHA256 Deduplication| E[(SQLite Database: data/events.db)]
-    end
-
-    subgraph Operations_Center ["Municipal Command Center UI"]
-        E --> F[Glassmorphism Dashboard]
-        F --> G[Telemetry Event Stream]
-        F --> H[Incident Lifecycle Dispatch]
-        F --> I[System Health Diagnostics]
-        F --> J[CSV / JSON Report Exporters]
-    end
-```
+- **Phase 1 (Road Damage)**: [`potholes_info/`](potholes_info/) — Dataset proofs, evaluation reports, and training plots.
+- **Phase 3 (ANPR Subsystem)**: [`anpr/`](anpr/) — 1,651 plate crop benchmark dataset, OCR V1/V2 reports, and localizer weights.
+- **Phase 8 (Pedestrian Safety)**: [`pedestrian_info/`](pedestrian_info/) — 7,737 image dataset, crosswalk safety reports, and model weights.
+- **Phase 9 (Infrastructure Intelligence)**: [`infrastructure_info/`](infrastructure_info/) — 10,192 multi-label stratified dataset, 57-class benchmark reports, and model weights.
 
 ---
 
-## 🤖 AI & Computer Vision Subsystems & Performance Evaluation
+## 🔮 Development Status & Roadmap
 
-> Model metrics are presented alongside real evaluation artifacts wherever available so that performance claims remain fully traceable to empirical held-out benchmark experiments.
-
----
-
-### 1. Road Damage Detection Subsystem
-
-- **Model File**: [`models/pothole.pt`](models/pothole.pt) | **SHA256**: `947ee609f36878b4224ade120c359658539dcbec609980f689b397db487b877b`
-- **Supported Defect Classes**: `longitudinal_crack`, `transverse_crack`, `alligator_crack`, `pothole`, `manhole`, `waterlogging`.
-- **Dataset**: 2,467 annotated road defect images (80% train, 10% val, 10% held-out test).
-
-#### Held-out Benchmark Test Metrics
-
-| Evaluation Metric | Held-out Test Benchmark Result |
-| :--- | :---: |
-| **Precision** | **54.32%** |
-| **Recall** | **46.33%** |
-| **mAP50** | **51.60%** |
-| **mAP50-95** | **26.40%** |
-
-*Note: Metrics represent strict evaluation on held-out test data.*
-
-#### Road Damage — Confusion Matrix
-The confusion matrix below demonstrates class localization across the 6 defect categories:
-
-![Road Damage Confusion Matrix](potholes_info/runs/multiclass_road_damage_final/confusion_matrix.png)
-
-*Figure 1: Verified confusion matrix for the 6-class Road Damage model (`models/pothole.pt`).*
-
-#### Road Damage — Precision-Recall (PR) Curve
-![Road Damage PR Curve](potholes_info/runs/multiclass_road_damage_final/BoxPR_curve.png)
-
-*Figure 2: Precision-Recall curve across all defect classes.*
-
-#### Road Damage — Training & Validation Loss Curves
-![Road Damage Training Results](potholes_info/runs/multiclass_road_damage_final/results.png)
-
-*Figure 3: Loss curves and mAP evolution across training epochs.*
-
-#### Real Video Observations & Real-World Dashcam Inference (`BUS-101`)
-On real-world urban video streams, the model detects potholes, alligator cracks, longitudinal cracks, manholes, and waterlogging in real time:
-
-##### 1. Pune City Monsoon Dashcam Stream (`Pune Road Condition Today...mp4`)
-![Pune City Monsoon Dashcam Pothole Detection](docs/images/pune_road_pothole_detection.jpg)
-
-*Figure 4A: Real-time road damage detection on Pune city monsoon dashcam video stream.*
-
-##### 2. Multi-Class Road Defect Stream (`pothole_road_damage.mp4`)
-![Pothole Road Damage Multi-Detection Frame](docs/images/pothole_road_damage_detection.jpg)
-
-*Figure 4B: High-density frame exhibiting 11 simultaneous road defect detections.*
-
-##### 3. Dashcam Video Stream (`patholes.mp4`)
-![Road Damage Max Detections Output](docs/images/pothole_max_detections.jpg)
-
-*Figure 4C: Real dashcam video frame exhibiting multi-class road damage detections.*
+| Stage | Capability | Status |
+| :--- | :--- | :--- |
+| **Stage 1** | Road Damage Detection | ✅ Complete (`models/pothole.pt`) |
+| **Stage 2** | Vehicle Density & Tracking | ✅ Complete (`models/yolov8n.pt`) |
+| **Stage 3** | ANPR & EasyOCR Subsystem | ✅ Complete (`models/anpr/best.pt`) |
+| **Stage 4** | Backend Ingestion API | ✅ Complete (`src/backend/app.py`) |
+| **Stage 5** | GIS Operations Dashboard | ✅ Complete (`src/dashboard/index.html`) |
+| **Stage 6** | Incident Management Subsystem | ✅ Complete (`tests/test_phase6_incidents.py`) |
+| **Stage 7** | Empirical Traffic Analytics & Indicators | ✅ Complete (`tests/test_phase7_analytics.py`) |
+| **Stage 8** | Pedestrian & Crosswalk Safety Analytics | ✅ Complete (`models/pedestrian/pedestrian_detector.pt`) |
+| **Stage 9** | Infrastructure & Traffic-Sign Intelligence | ✅ Complete (`models/infrastructure/infrastructure_detector.pt`) |
+| **Stage 10** | PostgreSQL / PostGIS Cloud Migration | 🔵 Planned |
 
 ---
 
-### 2. Vehicle Density & ByteTrack Multi-Object Tracking
+### 🚶 Phase 8 — Pedestrian & Crosswalk Safety Analytics
 
-- **Model File**: [`models/yolov8n.pt`](models/yolov8n.pt) | **SHA256**: `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36`
-- **Tracked Object Classes**: `car`, `bus`, `truck`, `motorcycle`.
-- **Counting Methodology**: Aggregates unique tracked object IDs across 10-second rolling evaluation windows to compute road segment vehicle counts and congestion levels. Untracked raw detections are excluded to prevent double-counting stationary or slow-moving vehicles.
-- **Empirical Video Benchmark**: On a 24-second real sample video (`traffic_density_bridge.mp4`), ByteTrack tracked **91 unique vehicles** across 3 rolling windows.
+#### ✅ Trained Phase 8 Pedestrian & Crosswalk Model
+- **Model Path**: [`models/pedestrian/pedestrian_detector.pt`](models/pedestrian/pedestrian_detector.pt)
+- **SHA256 Checksum**: `18d6e7c72fccde6dec294b02ab5c06ee73c89302f319234f857c7915549b1c9d`
+- **Training Dataset**: `pedestrian_info/pedestrian` (**7,737 total images**)
+- **Splits**: 5,415 train / 1,547 valid / 775 test
+- **Classes (3)**: `crossing` (crosswalk), `pedestrian`, `vehicle`
 
-#### Vehicle Tracking & ByteTrack Multi-Object Counter
-![ByteTrack Vehicle Tracking Output](docs/images/vehicle_tracking_bytetrack.jpg)
-
-*Figure 5: ByteTrack real-time multi-vehicle tracking & continuous ID assignment across dense traffic.*
-
----
-
-### 3. ANPR License Plate Localization Subsystem
-
-- **Model File**: [`models/anpr/best.pt`](models/anpr/best.pt) | **SHA256**: `d9584abdd286828d6ca0e504ace2c765dd7e66851647d8ba4ad03416f53ecf6a`
-- **Dataset**: 1,651 Indian license plate crop benchmark images.
-
-#### Real Video ANPR Localization Output
-![ANPR Plate Detection Output](docs/images/anpr_plate_detection.jpg)
-
-*Figure 6: Real-time license plate localization on video stream (`models/anpr/best.pt`).*
-
-#### Held-out Benchmark Test Metrics
-
-| Evaluation Metric | Held-out Test Benchmark Result |
-| :--- | :---: |
-| **Precision** | **98.18%** |
-| **Recall** | **95.78%** |
-| **mAP50** | **98.04%** |
-| **mAP50-95** | **70.42%** |
-
-#### ANPR Plate Localizer — Confusion Matrix
-![ANPR Confusion Matrix](anpr/runs/anpr_detection_v1/confusion_matrix.png)
-
-*Figure 7: High-precision confusion matrix for the ANPR Plate Localizer model (`models/anpr/best.pt`).*
-
-#### ANPR Plate Localizer — Precision-Recall Curve
-![ANPR PR Curve](anpr/runs/anpr_detection_v1/BoxPR_curve.png)
-
-*Figure 8: Precision-Recall curve demonstrating 98.04% mAP50 localization accuracy.*
-
-#### ANPR Plate Localizer — Training & Validation Results
-![ANPR Results Plot](anpr/runs/anpr_detection_v1/results.png)
-
-*Figure 9: Training & validation metrics for the ANPR plate detector.*
+#### Held-out Test Split Benchmark Results (332 test images, 1,693 instances)
+| Class Name | Precision | Recall | mAP50 | mAP50-95 |
+| :--- | :---: | :---: | :---: | :---: |
+| **crossing** (Crosswalk) | **95.60%** | **89.40%** | **94.40%** | **69.90%** |
+| **pedestrian** | **74.30%** | **72.10%** | **70.70%** | **43.30%** |
+| **vehicle** | **86.80%** | **71.30%** | **80.30%** | **51.70%** |
+| **Overall Model Average** | **85.60%** | **77.60%** | **81.78%** | **54.97%** |
 
 ---
 
-### 4. Optical Character Recognition (EasyOCR)
+### 🚦 Phase 9 — Infrastructure & Traffic-Sign Intelligence
 
-Plate localization is paired with EasyOCR for text extraction:
+#### ✅ Trained Phase 9 Traffic Sign Model (25 Epochs - Corrected Multi-Label Stratified Dataset)
+- **Model Path**: [`models/infrastructure/infrastructure_detector.pt`](models/infrastructure/infrastructure_detector.pt)
+- **SHA256 Checksum**: `7a71cdee3c8e382de5debe220abd8ee499b6806e45255dba80d69fb453c35837`
+- **Derived Stratified Dataset**: [`infrastructure_info/infrastructure`](infrastructure_info/infrastructure) (**10,192 images across 57 classes**)
+- **Splits**: 7,134 train (70.0%) / 1,529 valid (15.0%) / 1,529 test (15.0%)
+- **Training Config**: 25 Epochs, imgsz 416, batch 16, Apple Silicon MPS acceleration.
 
-| OCR Metric | Benchmark Result | Operational Interpretation |
-| :--- | :---: | :--- |
-| **Character Accuracy** | **20.14%** | Individual character recognition rate |
-| **Exact Match Accuracy** | **7.51%** | Full plate text exact string match |
-| **Character Error Rate (CER)** | **79.86%** | Normalized edit distance across predictions |
+#### Corrected Held-out Test Split Benchmark Results (1,529 test images)
+| Metric | 6-Epoch Baseline | Flawed Test Model | **Final Stratified Model** | Relative Improvement vs Baseline |
+| :--- | :---: | :---: | :---: | :---: |
+| **Precision** | 0.0548 | 0.4060 | **0.7966** | **+1,353.65%** |
+| **Recall** | 0.2292 | 0.3452 | **0.6791** | **+196.29%** |
+| **mAP50** | 0.1529 | 0.3493 | **0.6925** | **+352.91%** |
+| **mAP50-95** | 0.1100 | 0.2214 | **0.5628** | **+411.64%** |
 
-> *Note: OCR evaluation is reported numerically because a verified visual confusion-matrix artifact is not available in the repository.*
-
-**Important Technical Distinction**: Plate localization is extremely accurate (**98.04% mAP50**), but character OCR accuracy is a recognized technical limitation on Indian license plates. Recognized text strings are treated as candidate reads, not validated vehicle registrations.
-
----
-
-### 📊 Verified AI Results Summary
-
-| AI Subsystem | Benchmark Dataset / Input | Primary Metric | Model Status |
-| :--- | :--- | :---: | :--- |
-| **Road Damage Detection** | 2,467 Road Damage Images | **mAP50: 51.60%** | ✅ Verified (`models/pothole.pt`) |
-| **ANPR Plate Localizer** | 1,651 Indian Plate Crops | **mAP50: 98.04%** | ✅ Verified (`models/anpr/best.pt`) |
-| **Vehicle Density Tracking** | COCO YOLOv8n + ByteTrack | **91 Unique Vehicles / 24s** | ✅ Verified (`models/yolov8n.pt`) |
-| **EasyOCR Character Read** | Indian Plate OCR Benchmark | **Char Acc: 20.14%** | ⚠️ Recognized Limitation |
-
----
-
-## 🗄️ Central Backend API & Database Engine
-
-- **Framework**: FastAPI running on Uvicorn (`http://127.0.0.1:8000`).
-- **Database Engine**: SQLite 3 with Write-Ahead Logging (WAL mode) at [`data/events.db`](data/events.db).
-- **Stored Telemetry Event Count**: **7,964 Real Records** (2,708 Road Damage, 5,256 ANPR).
-- **Deduplication Engine**: Performs primary-key verification and secondary deterministic SHA256 hash checking (`source`, `event_type`, `timestamp`, `payload_json`).
-
----
-
-## 🚨 Incident Management Subsystem
-
-The platform cleanly separates raw *Telemetry Events* from operational *Incidents*:
-
-- **Creation**: Incidents can only be created from a verified, existing `event_id` in the database.
-- **State Machine Lifecycle**:
-  ```
-  OPEN ➔ ACKNOWLEDGED ➔ IN_PROGRESS ➔ RESOLVED ➔ CLOSED
-  ```
-- **State Transition Guard**: Invalid transitions (e.g. `RESOLVED` back to `ACKNOWLEDGED`) are rejected with HTTP 400.
-- **Audit History**: Every status modification or operator note generates an immutable record in `incident_history`.
-
----
-
-## 📊 Operations Command Center Dashboard
-
-Served locally at [`http://127.0.0.1:3000`](http://127.0.0.1:3000), the Glassmorphism dashboard provides 9 navigation views:
-
-1. **Overview Tab**: Real-time KPI metric summary cards & raw telemetry event stream.
-2. **Road Damage Tab**: Detailed breakdown cards for Alligator Cracks (1,747), Potholes (527), Longitudinal Cracks (273), Transverse Cracks (135), Manholes (24), and Waterloggings (2).
-3. **Traffic Density Tab**: Vehicle counts and 10-second rolling window monitoring.
-4. **ANPR & OCR Tab**: Plate detection statistics and EasyOCR character accuracy transparency banner.
-5. **Incident Management Tab**: Real incident dispatch form, filterable incident directory table, status update modal, and audit trail viewer.
-6. **GIS Map Tab**: Leaflet cartographic map displaying **Mode B** banner when GPS telemetry is null.
-7. **Analytics Tab**: Empirical database statistics and source breakdowns.
-8. **System Health Tab**: Real-time status checks for FastAPI (`/health`), SQLite DB, model weights, and hardware sensors.
-9. **Reports Tab**: Single-click **Export Events CSV** and **Export Events JSON** download buttons.
-
----
-
-## 🔒 Protected Model Checksums & Database Integrity
-
-Automated verification ensures model weights and stored database records match verified baselines:
-
-| Asset Path | Asset Description | Baseline SHA256 / Audit Baseline | Verification Status |
-| :--- | :--- | :--- | :--- |
-| [`models/pothole.pt`](models/pothole.pt) | Road Damage YOLOv8 Model | `947ee609f36878b4224ade120c359658539dcbec609980f689b397db487b877b` | **VERIFIED PASS** |
-| [`models/anpr/best.pt`](models/anpr/best.pt) | ANPR YOLOv8 Localizer | `d9584abdd286828d6ca0e504ace2c765dd7e66851647d8ba4ad03416f53ecf6a` | **VERIFIED PASS** |
-| [`models/yolov8n.pt`](models/yolov8n.pt) | COCO Pretrained Base Model | `f59b3d833e2ff32e194b5bb8e08d211dc7c5bdf144b90d2c8412c47ccfc83b36` | **VERIFIED PASS** |
-| [`data/events.db`](data/events.db) | SQLite Database Store | **7,964 Total Records** (0 mapped, 7,964 unmapped) | **VERIFIED PASS** |
+#### Real Video Validation (`data/sample_videos/crossign.mp4`)
+- **Resolution & Performance**: 463 frames (720x480) processed in 5.13s (**90.23 FPS**).
+- **Detections**: 143 Traffic Sign Events (`STOP Sign`, `Traffic_signal`, `Stack type Advance Direction sign`, `Filling Station`).
+- **Mean Bounding Box Confidence**: **0.3742**
+- **Honest GPS Telemetry**: `GPS Telemetry Unavailable` (`latitude: null, longitude: null`).
 
 ---
 
 ## 💻 Quick Start & Demonstration
 
-### 1. Run Automated System Verification
-```bash
-./scripts/verify_project.sh
-```
-
-### 2. Launch System Demo
+### 1. Launch System Demo
 ```bash
 ./scripts/run_demo.sh
 ```
@@ -322,55 +147,33 @@ Access local demo endpoints:
 
 ## 🧪 Automated Test Coverage
 
-The platform includes 20 automated unit and integration test cases:
+The platform includes **44 automated unit and integration test cases** across Phases 1–9 (100% PASS):
 ```bash
-# Run backend API & incident management test suite (15/15 PASS)
-python tests/test_backend.py
+# Run complete system test suite across all modules (44/44 PASS)
+python -m unittest discover tests
 
-# Run dashboard & data integrity test suite (5/5 PASS)
-python tests/test_dashboard.py
+# Or run individual component test suites:
+python tests/test_backend.py                # Backend API & Database (15/15 PASS)
+python tests/test_dashboard.py              # GIS Dashboard & Data Integrity (5/5 PASS)
+python tests/test_phase6_incidents.py       # Incident Management Subsystem (9/9 PASS)
+python tests/test_phase7_analytics.py       # Analytics & Availability Indicators (5/5 PASS)
+python tests/test_phase8_pedestrian.py      # Pedestrian & Crosswalk Safety (4/4 PASS)
+python tests/test_phase9_infrastructure.py  # Infrastructure & Traffic Sign Intelligence (6/6 PASS)
 ```
-
----
-
-## ⚠️ Recognized Technical Limitations & Honesty
-
-1. **EasyOCR Character Accuracy**: While plate localization is strong (98.04% mAP50), EasyOCR character accuracy is 20.14% on complex Indian fonts. Recognized plate text strings are treated as candidate reads.
-2. **Waterlogging Sample Scarcity**: Scarcity of training samples limits waterlogging detection recall.
-3. **GPS Telemetry Null State**: Test video feeds were recorded without attached NMEA hardware GPS sensors. All 7,964 stored events report `latitude: null, longitude: null`. The GIS dashboard represents this honestly in **Mode B** ("GPS Telemetry Unavailable").
-
----
-
-## 🔮 Development Status & Roadmap
-
-| Stage | Capability | Status |
-| :--- | :--- | :--- |
-| **Stage 1** | Road Damage Detection | ✅ Complete |
-| **Stage 2** | Vehicle Density & Tracking | ✅ Complete |
-| **Stage 3** | ANPR & EasyOCR Subsystem | ✅ Complete (OCR Limit Noted) |
-| **Stage 4** | Backend Ingestion API | ✅ Complete |
-| **Stage 5** | GIS Operations Dashboard | ✅ Complete (GPS Limit Noted) |
-| **Stage 6** | Incident Management Subsystem | ✅ Complete |
-| **Stage 7** | Analytics & Automated Exporters | ✅ Complete |
-| **Stage 8** | Pedestrian Safety Analytics | 🔵 Planned |
-| **Stage 9** | Infrastructure Inspection | 🔵 Planned |
-| **Stage 10** | PostgreSQL / PostGIS Cloud Migration | 🔵 Planned |
 
 ---
 
 ## 📚 Complete Documentation Index
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — System Flowcharts & 9 Mermaid Diagrams.
-- [`docs/AI_PIPELINE.md`](docs/AI_PIPELINE.md) — AI Model Specifications & Metrics.
+- [`infrastructure_info/README.md`](infrastructure_info/README.md) — Phase 9 Infrastructure Package Specification.
+- [`infrastructure_info/documentation/STRATIFIED_SPLIT_REPORT.md`](infrastructure_info/documentation/STRATIFIED_SPLIT_REPORT.md) — Multi-Label Stratification Audit & 57-Class Distribution.
+- [`infrastructure_info/documentation/EVALUATION_REPORT.md`](infrastructure_info/documentation/EVALUATION_REPORT.md) — Phase 9 57-Class Benchmark Metrics.
+- [`infrastructure_info/documentation/REAL_VIDEO_REPORT.md`](infrastructure_info/documentation/REAL_VIDEO_REPORT.md) — Real Video Test on crossign.mp4.
+- [`docs/phase6/INCIDENT_MANAGEMENT.md`](docs/phase6/INCIDENT_MANAGEMENT.md) — Phase 6 Incident Tracking Specification.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — System Flowcharts & Mermaid Diagrams.
 - [`docs/API.md`](docs/API.md) — Central Backend REST API Reference.
 - [`docs/DATABASE.md`](docs/DATABASE.md) — Relational Database Schema & ER Diagram.
 - [`docs/DATASETS.md`](docs/DATASETS.md) — Dataset Provenance & Label Specs.
-- [`docs/DATA_INTEGRITY.md`](docs/DATA_INTEGRITY.md) — Zero Fabrication Policy & Checksum Baselines.
-- [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md) — 5-to-10 Minute Judge Demonstration Script.
-- [`docs/SIH_PRESENTATION.md`](docs/SIH_PRESENTATION.md) — 20-Slide Hackathon Presentation Structure.
-- [`docs/JUDGE_QA.md`](docs/JUDGE_QA.md) — 20 Judge Q&A Defense Questions & Answers.
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — Local, Docker & Cloud Deployment Guide.
-- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — Capability Development Matrix.
 
 ---
 

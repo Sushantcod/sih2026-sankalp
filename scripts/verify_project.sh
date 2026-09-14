@@ -59,9 +59,12 @@ if gps_null != 7964:
 print(f'  ✓ PASS: Database Integrity Verified (7,964 Real Records, 100% Honest GPS-Null State)')
 "
 
-# 3. Backend Unit & Incident Tests
-echo "[3/6] Running Backend & Incident Management Unit Tests..."
+# 3. Backend Unit, Incident & Analytics Tests
+echo "[3/6] Running Backend, Incident & Analytics Unit Tests..."
 "$PYTHON_BIN" tests/test_backend.py
+"$PYTHON_BIN" tests/test_phase6_incidents.py
+"$PYTHON_BIN" tests/test_phase7_analytics.py
+"$PYTHON_BIN" tests/test_phase8_pedestrian.py
 
 # 4. Dashboard & GIS Tests
 echo "[4/6] Running Dashboard & Integration Tests..."

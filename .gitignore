@@ -40,11 +40,19 @@ data/*.db-shm
 !/potholes_info/runs/multiclass_road_damage_final/
 /potholes_info/runs/multiclass_road_damage_final/weights/
 
-# Internal Subsystem & Dataset Documentation Reports (Excluded from public repo)
-/anpr/documentation/
-/potholes_info/*.md
-docs/MASTER_PLAN.md
-docs/PROJECT_AUDIT.md
+/pedestrian_info/pedestrian/
+/pedestrian_info/runs/*
+!/pedestrian_info/runs/final_train_run/
+/pedestrian_info/runs/final_train_run/weights/
+
+/data/infrastructure_stratified/
+/infrastructure_info/infrastructure/
+/infrastructure_info/runs/*
+!/infrastructure_info/runs/stratified_final/
+/infrastructure_info/runs/stratified_final/weights/
+
+# Scratch & Temporary Scripts
+scratch/
 
 # Private AI Handover Instructions (Do NOT push to GitHub)
 AGENTS.md

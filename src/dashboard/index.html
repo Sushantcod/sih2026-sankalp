@@ -409,10 +409,10 @@
 
             <!-- TAB 7: ANALYTICS -->
             <div id="tab-analytics" class="tab-pane hidden">
-                <section class="card-box">
+                <section class="card-box mb-24">
                     <div class="section-header">
                         <div class="section-title">
-                            <h2>📈 System Analytics & Empirical Metrics</h2>
+                            <h2>📈 Empirical Telemetry Analytics</h2>
                         </div>
                     </div>
                     <div class="metrics-grid mb-24">
@@ -428,6 +428,94 @@
                                 <span class="card-label">ANPR Telemetry Records</span>
                                 <h2 class="card-value">5,256</h2>
                                 <span class="card-subtext">Source: anpr.mp4 Stream</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Total Verified Telemetry Events</span>
+                                <h2 class="card-value">7,964</h2>
+                                <span class="card-subtext">Database: data/events.db</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title mb-16">
+                        <h2>📡 Spatial & Route Telemetry Availability Indicators</h2>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">O-D ANALYSIS STATUS</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ Spatial Telemetry Unavailable</h3>
+                                <span class="card-subtext">O-D Analysis Unavailable — insufficient spatial trajectory telemetry.</span>
+                            </div>
+                        </div>
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">ROUTE DELAY ANALYSIS</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ Entry/Exit Telemetry Unavailable</h3>
+                                <span class="card-subtext">Route Delay Unavailable — insufficient route/time telemetry.</span>
+                            </div>
+                        </div>
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">DEFICIENCY / ROAD IMPACT</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ Location Telemetry Unavailable</h3>
+                                <span class="card-subtext">Correlation not established — location telemetry unavailable.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title mb-16 mt-24">
+                        <h2>🚶 Phase 8 Pedestrian & Crosswalk Safety Analytics Status</h2>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card" style="border-left: 4px solid #22c55e;">
+                            <div class="card-info">
+                                <span class="card-label">PHASE 8 PEDESTRIAN MODEL</span>
+                                <h3 class="text-success mt-8" style="font-size: 1.1rem;">✅ Phase 8 Model Active</h3>
+                                <span class="card-subtext" id="ped-model-subtext">3-Class YOLOv8 Model trained on 7,737 images (models/pedestrian/pedestrian_detector.pt).</span>
+                            </div>
+                        </div>
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">SCHOOL-ZONE SAFETY</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ School Context Unavailable</h3>
+                                <span class="card-subtext">School-Zone Context Unavailable — location metadata missing.</span>
+                            </div>
+                        </div>
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">PEDESTRIAN RISK ASSESSMENT</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ Insufficient Ground Truth</h3>
+                                <span class="card-subtext">Pedestrian Risk Assessment — Insufficient ground truth risk labels.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title mb-16 mt-24">
+                        <h2>🚦 Phase 9 Traffic Sign & Infrastructure Intelligence Status</h2>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric-card" style="border-left: 4px solid #22c55e;">
+                            <div class="card-info">
+                                <span class="card-label">PHASE 9 INFRASTRUCTURE MODEL</span>
+                                <h3 class="text-success mt-8" style="font-size: 1.1rem;">✅ Phase 9 Model Active</h3>
+                                <span class="card-subtext">57-Class YOLOv8 Detector trained on 10,192 images (models/infrastructure/infrastructure_detector.pt).</span>
+                            </div>
+                        </div>
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">BROKEN STREETLIGHTS</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ Feature Unavailable</h3>
+                                <span class="card-subtext">Broken Streetlights Detection — Unavailable in dataset annotations.</span>
+                            </div>
+                        </div>
+                        <div class="metric-card" style="border-left: 4px solid #eab308;">
+                            <div class="card-info">
+                                <span class="card-label">GPS INFRASTRUCTURE MAP</span>
+                                <h3 class="text-warning mt-8" style="font-size: 1.1rem;">⚠️ GPS Telemetry Unavailable</h3>
+                                <span class="card-subtext">GPS Telemetry Unavailable — NMEA hardware GPS sensor absent.</span>
                             </div>
                         </div>
                     </div>
@@ -458,6 +546,14 @@
                         <div class="health-item">
                             <span class="health-label">ANPR YOLOv8 Detector</span>
                             <span class="health-value text-success">READY (models/anpr/best.pt — SHA256 Verified)</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Phase 8 Pedestrian Detector</span>
+                            <span class="health-value text-success" id="health-pedestrian-status">READY (models/pedestrian/pedestrian_detector.pt)</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Phase 9 Infrastructure Detector</span>
+                            <span class="health-value text-success" id="health-infra-status">READY (models/infrastructure/infrastructure_detector.pt)</span>
                         </div>
                         <div class="health-item">
                             <span class="health-label">GPS Hardware Sensor</span>

@@ -16,7 +16,12 @@ SUPPORTED_EVENT_TYPES = {
     "congestion",
     # Phase 3 ANPR
     "plate_detected",
-    "anpr"
+    "anpr",
+    # Phase 8 Pedestrian Safety
+    "pedestrian_detected",
+    "crossing_detected",
+    # Phase 9 Infrastructure
+    "traffic_sign_detected"
 }
 
 class EventIngestPayload(BaseModel):
