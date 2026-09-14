@@ -15,17 +15,29 @@
 
 ---
 
-## 📌 Smart India Hackathon (SIH 2026) Problem Statement Alignment
+## 🏆 Smart India Hackathon (SIH 2026) Problem Statement Alignment
 
-| Attribute | Details |
+| Attribute | Specification Details |
 | :--- | :--- |
 | **Problem Statement ID** | **26124** |
-| **Problem Title** | **AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet** |
-| **Organization** | **Bharat Electronics Limited (BEL)** |
-| **Category & Theme** | **Software \| Smart Automation** |
-| **Core Innovation** | **Mobile Edge-AI Sensing on Public Bus Fleet + Centralized GIS Intelligence Command Platform** |
+| **Problem Statement Title** | **AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet** |
+| **Sponsoring Organization** | **Bharat Electronics Limited (BEL)** |
+| **Category & Theme** | **Software** \| **Smart Automation** |
+| **Target Infrastructure** | Urban Public Transport Bus Fleets (Dashcams / Multi-camera Setup) |
 
-> **Key Innovation**: Reuses existing public transport bus camera infrastructure as mobile sensing nodes across the city, processing video at the Edge (onboard) to send compact JSON alerts to a central command platform—eliminating the massive bandwidth cost of streaming raw video while covering 100% of urban transit corridors.
+### 📋 Problem Background & Need
+Urban public transport buses traverse almost every major road in a city every day. Modern buses carry multiple cameras, but today these are used only for passive incident recording. Meanwhile, municipal authorities rely on fixed CCTVs (limited intersection coverage), slow manual inspections, and delayed citizen complaints to identify road defects, traffic congestion, and road hazards.
+
+### 💡 Core Solution Architecture & Novelty Claims
+This platform transforms public transport buses into **mobile urban sensing units**:
+1. **Existing Fleet Reuse (Zero Hardware Overhead)**: Eliminates dedicated survey vehicles or expensive static CCTV installs by leveraging existing daily bus routes (`BUS-101`) for continuous city-wide coverage.
+2. **Onboard Edge AI Processing**: Runs lightweight computer vision models (YOLOv8 + ByteTrack + EasyOCR) on edge hardware inside buses, transmitting compact JSON telemetry over cellular networks instead of streaming costly raw video feeds.
+3. **Multi-Task Sensing Fusion**: Fuses 4 critical urban sensing tasks into a single edge pipeline & central platform:
+   - **Road Infrastructure Defects**: Multi-class detection of potholes, alligator cracks, longitudinal cracks, manholes, and waterlogging (`models/pothole.pt`).
+   - **Traffic Density & Bottlenecks**: Vehicle classification (`car`, `bus`, `truck`, `motorcycle`) and ByteTrack 10-second rolling window tracking.
+   - **ANPR & Offending Vehicle Tracking**: License plate localization (`models/anpr/best.pt`), EasyOCR character recognition, and real-time vehicle tracking during rash driving or hit-and-run incidents.
+   - **Pedestrian Safety & Hazard Detection**: Detection of vulnerable situations (school children crossing, missing medians/zebra crossings).
+4. **Centralized GIS Command Center**: Aggregates fleet-wide telemetry into an SQLite database (`data/events.db`), displaying real-time incidents, congestion heatmaps, infrastructure deficiency reports, and automated CSV/JSON exports for municipal transport authorities.
 
 ---
 
