@@ -1,0 +1,79 @@
+{
+  "video_path": "data/sample_videos/anpr.mp4",
+  "resolution": "1440x960",
+  "source_fps": 30.0,
+  "total_frames": 1800,
+  "duration_sec": 60.0,
+  "detector_confidence_threshold": 0.25,
+  "total_plate_detections": 5256,
+  "total_ocr_attempts": 5256,
+  "successful_ocr_reads": 1008,
+  "failed_ocr_reads": 4248,
+  "distinct_recognized_strings_count": 613,
+  "total_processing_time_sec": 102.92,
+  "effective_pipeline_fps": 17.49,
+  "avg_ocr_latency_ms": 11.76,
+  "recognized_strings_distribution": [
+    [
+      "GXIS0GJ",
+      50
+    ],
+    [
+      "KHOSZZK",
+      29
+    ],
+    [
+      "GXISOGJ",
+      22
+    ],
+    [
+      "APOSJEO",
+      20
+    ],
+    [
+      "EXGINBG",
+      14
+    ],
+    [
+      "KHOGKSU",
+      9
+    ],
+    [
+      "LNSZZQ",
+      9
+    ],
+    [
+      "LNSZZC",
+      9
+    ],
+    [
+      "APOSJEQ",
+      8
+    ],
+    [
+      "EYGINBG",
+      8
+    ],
+    [
+      "LHISZZC",
+      8
+    ],
+    [
+      "LPLLJA",
+      7
+    ],
+    [
+      "LPMLJA",
+      7
+    ],
+    [
+      "GUOBEPD",
+      6
+    ],
+    [
+      "LNSZZO",
+      6
+    ]
+  ],
+  "output_video_path": "anpr/outputs/anpr_ocr_v1/anpr_ocr_video_annotated.mp4"
+}

@@ -1,0 +1,38 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# System & Editor Files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# SQLite Database Journal Files
+data/*.db-wal
+data/*.db-shm
+
+# Large MP4 Video Files (>100MB GitHub limit)
+*.mp4
+
+# Raw Dataset Images & Labels (Preserves data.yaml, specs, reports & weights)
+anpr/anpr/
+anpr/ocr/
+anpr/runs/
+potholes_info/potholes/
+potholes_info/runs/
+runs/
+data/pothole_dataset/
+
+# Private AI Handover Instructions (Do NOT push to GitHub)
+AGENTS.md
+agent.md

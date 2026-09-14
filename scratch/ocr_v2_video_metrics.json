@@ -1,0 +1,15 @@
+{
+  "video_path": "data/sample_videos/anpr.mp4",
+  "resolution": "1440x960",
+  "total_frames": 1800,
+  "duration_sec": 60.0,
+  "total_detections": 5256,
+  "total_ocr_attempts": 5256,
+  "successful_ocr_reads": 1008,
+  "failed_ocr_reads": 4248,
+  "distinct_recognized_strings": 613,
+  "total_proc_time_sec": 104.09,
+  "effective_fps": 17.29,
+  "avg_ocr_latency_ms": 11.97,
+  "output_video_path": "anpr/outputs/anpr_ocr_v2/anpr_ocr_v2_video_annotated.mp4"
+}

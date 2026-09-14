@@ -1,0 +1,4 @@
+ultralytics>=8.0.0
+opencv-python-headless>=4.7.0
+huggingface_hub>=0.16.0
+numpy>=1.23.0

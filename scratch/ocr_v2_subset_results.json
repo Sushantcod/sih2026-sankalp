@@ -1,0 +1,70 @@
+{
+  "subset_size": 200,
+  "experiment_results": [
+    {
+      "variant_id": 1,
+      "variant_name": "Variant 1: Original Crop (Baseline V1)",
+      "exact_matches": 26,
+      "total_samples": 200,
+      "exact_match_acc_pct": 13.0,
+      "total_gt_chars": 1889,
+      "total_edit_dist": 838,
+      "cer_pct": 44.36,
+      "char_acc_pct": 55.64,
+      "latency_ms_per_sample": 102.02,
+      "total_time_sec": 20.4
+    },
+    {
+      "variant_id": 2,
+      "variant_name": "Variant 2: Grayscale + 2x Resize",
+      "exact_matches": 17,
+      "total_samples": 200,
+      "exact_match_acc_pct": 8.5,
+      "total_gt_chars": 1889,
+      "total_edit_dist": 803,
+      "cer_pct": 42.51,
+      "char_acc_pct": 57.49,
+      "latency_ms_per_sample": 387.26,
+      "total_time_sec": 77.45
+    },
+    {
+      "variant_id": 3,
+      "variant_name": "Variant 3: CLAHE + 2x Resize",
+      "exact_matches": 23,
+      "total_samples": 200,
+      "exact_match_acc_pct": 11.5,
+      "total_gt_chars": 1889,
+      "total_edit_dist": 847,
+      "cer_pct": 44.84,
+      "char_acc_pct": 55.16,
+      "latency_ms_per_sample": 383.48,
+      "total_time_sec": 76.7
+    },
+    {
+      "variant_id": 4,
+      "variant_name": "Variant 4: Adaptive Threshold + 2x Resize",
+      "exact_matches": 0,
+      "total_samples": 200,
+      "exact_match_acc_pct": 0.0,
+      "total_gt_chars": 1889,
+      "total_edit_dist": 1123,
+      "cer_pct": 59.45,
+      "char_acc_pct": 40.55,
+      "latency_ms_per_sample": 374.33,
+      "total_time_sec": 74.87
+    }
+  ],
+  "winning_variant": {
+    "variant_id": 1,
+    "variant_name": "Variant 1: Original Crop (Baseline V1)",
+    "exact_matches": 26,
+    "total_samples": 200,
+    "exact_match_acc_pct": 13.0,
+    "total_gt_chars": 1889,
+    "total_edit_dist": 838,
+    "cer_pct": 44.36,
+    "char_acc_pct": 55.64,
+    "latency_ms_per_sample": 102.02,
+    "total_time_sec": 20.4
+  }
+}

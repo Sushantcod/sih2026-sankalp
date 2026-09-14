@@ -1,0 +1,42 @@
+{
+  "Phase 1 Pothole Model": {
+    "path": "models/pothole.pt",
+    "sha256": "947ee609f36878b4224ade120c359658539dcbec609980f689b397db487b877b",
+    "exists": true
+  },
+  "ANPR Detector Best Weights": {
+    "path": "anpr/runs/anpr_detection_v1/weights/best.pt",
+    "sha256": "d9584abdd286828d6ca0e504ace2c765dd7e66851647d8ba4ad03416f53ecf6a",
+    "exists": true
+  },
+  "ANPR Detector Last Weights": {
+    "path": "anpr/runs/anpr_detection_v1/weights/last.pt",
+    "sha256": "f03fc8d33234143fc82391e117db08bfd1fa7abd6f91648a8dc6e25c07272dd2",
+    "exists": true
+  },
+  "ANPR Video Input": {
+    "path": "data/sample_videos/anpr.mp4",
+    "sha256": "83fad1739bacb3c7e00077e11b1da90194fbb10b73c666e0745ba9923efad3d1",
+    "exists": true
+  },
+  "OCR Output Video": {
+    "path": "anpr/outputs/anpr_ocr_v1/anpr_ocr_video_annotated.mp4",
+    "sha256": "7972dca6a3c8d603e41b30dc35e55c5cfa2e1cf1027c9e189c8cef900096c234",
+    "exists": true
+  },
+  "OCR Audit Script": {
+    "path": "scratch/ocr_data_audit.py",
+    "sha256": "a391f0443052ab9583294a766d1e238dc798c3c5c4006691c927347ed424a5d7",
+    "exists": true
+  },
+  "OCR Benchmark Script": {
+    "path": "scratch/benchmark_ocr.py",
+    "sha256": "9b27e86bbeb8d09d03b4caf4f7ffc7b0743f5ea383cc54711b8ae905d78600ae",
+    "exists": true
+  },
+  "OCR Integration Script": {
+    "path": "scratch/integrated_ocr_test.py",
+    "sha256": "3f0ac862d9523e92ec13b13cb8a82cea45163c6fd71c321f077510cea365c0f0",
+    "exists": true
+  }
+}

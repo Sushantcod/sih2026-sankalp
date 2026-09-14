@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIH 2026 — Smart Road Operations & Incident Management Command Center</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <!-- App CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-badge">SIH 2026</div>
+                <div class="brand-text">
+                    <h1>Smart Road Monitoring & Traffic Platform</h1>
+                    <p class="subtitle">Municipal Operations Command Center & Incident Management</p>
+                </div>
+            </div>
+            
+            <div class="system-status">
+                <div class="status-chip" id="api-status">
+                    <span class="dot pulse yellow"></span>
+                    <span class="status-text">Connecting API...</span>
+                </div>
+                <div class="status-chip" id="db-status">
+                    <span class="dot yellow"></span>
+                    <span class="status-text">Checking DB...</span>
+                </div>
+                <div class="refresh-control">
+                    <button id="btn-refresh" class="btn btn-secondary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.17 19.77a10 10 0 0 1 .58-13.88L8 2M2.5 22v-6h6M21.83 4.23a10 10 0 0 1-.58 13.88L16 22"/></svg>
+                        Refresh Data
+                    </button>
+                    <span class="last-updated">Last Refresh: <strong id="last-refresh-time">Never</strong></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Command Center Navigation Tabs -->
+        <nav class="nav-tabs-bar">
+            <button class="nav-tab active" data-tab="overview">📊 Overview</button>
+            <button class="nav-tab" data-tab="damage">⚠️ Road Damage</button>
+            <button class="nav-tab" data-tab="traffic">🚘 Traffic Density</button>
+            <button class="nav-tab" data-tab="anpr">🔢 ANPR & OCR</button>
+            <button class="nav-tab" data-tab="incidents">🚨 Incident Management</button>
+            <button class="nav-tab" data-tab="gis">🗺️ GIS Map & Heatmap</button>
+            <button class="nav-tab" data-tab="analytics">📈 Analytics</button>
+            <button class="nav-tab" data-tab="health">💻 System Health</button>
+            <button class="nav-tab" data-tab="reports">📥 Reports</button>
+        </nav>
+
+        <main class="main-content">
+            <!-- TAB 1: OVERVIEW -->
+            <div id="tab-overview" class="tab-pane active">
+                <section class="metrics-grid">
+                    <div class="metric-card card-total">
+                        <div class="card-icon">📊</div>
+                        <div class="card-info">
+                            <span class="card-label">Total Ingested Events</span>
+                            <h2 class="card-value" id="val-total-events">7,964</h2>
+                            <span class="card-subtext">Real API Stored Events</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-damage">
+                        <div class="card-icon">⚠️</div>
+                        <div class="card-info">
+                            <span class="card-label">Road Damage Detections</span>
+                            <h2 class="card-value" id="val-damage-events">2,708</h2>
+                            <span class="card-subtext">Potholes, Cracks, Manholes</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-anpr">
+                        <div class="card-icon">🚘</div>
+                        <div class="card-info">
+                            <span class="card-label">ANPR Plate Events</span>
+                            <h2 class="card-value" id="val-anpr-events">5,256</h2>
+                            <span class="card-subtext">YOLOv8 Plate Detections</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-incidents">
+                        <div class="card-icon">🚨</div>
+                        <div class="card-info">
+                            <span class="card-label">Active Incidents</span>
+                            <h2 class="card-value" id="val-active-incidents">0</h2>
+                            <span class="card-subtext">Open / In Progress</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-unmapped">
+                        <div class="card-icon">📡</div>
+                        <div class="card-info">
+                            <span class="card-label">GPS Coverage</span>
+                            <h2 class="card-value text-alert" id="val-gps-coverage">0%</h2>
+                            <span class="card-subtext">GPS Telemetry Unavailable</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="filter-section card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                            <h2>Real Telemetry Query Filters</h2>
+                        </div>
+                    </div>
+                    <form id="filter-form" class="filter-grid">
+                        <div class="filter-group">
+                            <label for="filter-type">Event Type</label>
+                            <select id="filter-type" class="form-control">
+                                <option value="">All Supported Types</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-source">Telemetry Source</label>
+                            <select id="filter-source" class="form-control">
+                                <option value="">All Sources</option>
+                            </select>
+                        </div>
+                        <div class="filter-actions">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <button type="button" id="btn-reset-filters" class="btn btn-tertiary">Reset</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="events-table-section card-box">
+                    <div class="table-header">
+                        <div class="section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                            <h2>Real Telemetry Event Stream</h2>
+                        </div>
+                        <div class="table-info-meta">
+                            <span id="table-record-count">Showing 0 of 0 events</span>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table" id="events-table">
+                            <thead>
+                                <tr>
+                                    <th>Event ID</th>
+                                    <th>Event Type</th>
+                                    <th>Source</th>
+                                    <th>Timestamp</th>
+                                    <th>GPS Location</th>
+                                    <th>Confidence</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">Loading telemetry data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-bar">
+                        <div class="page-size-selector">
+                            <label for="page-size">Page Size:</label>
+                            <select id="page-size" class="form-control-sm">
+                                <option value="50">50</option>
+                                <option value="100" selected>100</option>
+                                <option value="250">250</option>
+                            </select>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="btn-prev-page" class="btn btn-secondary btn-sm" disabled>&laquo; Previous</button>
+                            <span id="page-indicator" class="page-indicator">Page 1</span>
+                            <button id="btn-next-page" class="btn btn-secondary btn-sm">Next &raquo;</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 2: ROAD DAMAGE -->
+            <div id="tab-damage" class="tab-pane hidden">
+                <section class="card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>⚠️ Road Damage Inspection Subsystem</h2>
+                        </div>
+                    </div>
+                    <p class="mb-16 text-secondary">Multi-class road damage detection trained on held-out benchmark datasets (6-class YOLOv8 architecture: <code>models/pothole.pt</code>).</p>
+                    <div class="metrics-grid mb-24">
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Alligator Cracks</span>
+                                <h2 class="card-value" id="val-cnt-alligator">1,747</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Potholes</span>
+                                <h2 class="card-value" id="val-cnt-pothole">527</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Longitudinal Cracks</span>
+                                <h2 class="card-value" id="val-cnt-longitudinal">273</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Transverse Cracks</span>
+                                <h2 class="card-value" id="val-cnt-transverse">135</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Manholes</span>
+                                <h2 class="card-value" id="val-cnt-manhole">24</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Waterlogging</span>
+                                <h2 class="card-value" id="val-cnt-waterlogging">2</h2>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 3: TRAFFIC DENSITY -->
+            <div id="tab-traffic" class="tab-pane hidden">
+                <section class="card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>🚘 Vehicle Density & ByteTrack Traffic Monitoring</h2>
+                        </div>
+                    </div>
+                    <p class="text-secondary mb-16">COCO YOLOv8n + ByteTrack multi-object tracking over 10-second rolling windows (car, bus, truck, motorcycle).</p>
+                    <div class="info-banner mb-16">
+                        <span>ℹ️ Tracked vehicle IDs count unique vehicles per 10-second window to compute real-time road segment congestion levels.</span>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 4: ANPR & OCR -->
+            <div id="tab-anpr" class="tab-pane hidden">
+                <section class="card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>🔢 Automatic Number Plate Recognition (ANPR) & OCR</h2>
+                        </div>
+                    </div>
+                    <div class="gps-banner warning mb-16">
+                        <span class="banner-icon">⚠️</span>
+                        <span class="banner-text"><strong>OCR Performance Notice:</strong> YOLOv8 License Plate Detection achieves 98.18% precision & 98.04% mAP50. EasyOCR character accuracy is currently 20.14% on complex Indian plates — OCR strings are raw recognized candidates, not validated registrations.</span>
+                    </div>
+                    <div class="metrics-grid mb-24">
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Total Plate Detections</span>
+                                <h2 class="card-value">5,256</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">High Confidence Reads</span>
+                                <h2 class="card-value">1,008</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Distinct Recognized Strings</span>
+                                <h2 class="card-value">613</h2>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 5: INCIDENT MANAGEMENT -->
+            <div id="tab-incidents" class="tab-pane hidden">
+                <section class="card-box mb-24">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>➕ Dispatch New Incident from Real Telemetry Event</h2>
+                        </div>
+                    </div>
+                    <form id="create-incident-form" class="filter-grid">
+                        <div class="filter-group">
+                            <label for="inc-event-id">Target Real Event ID *</label>
+                            <input type="text" id="inc-event-id" class="form-control" placeholder="e.g. evt_0001 or select below" required>
+                        </div>
+                        <div class="filter-group">
+                            <label for="inc-severity">Severity Level</label>
+                            <select id="inc-severity" class="form-control">
+                                <option value="LOW">LOW</option>
+                                <option value="MEDIUM" selected>MEDIUM</option>
+                                <option value="HIGH">HIGH</option>
+                                <option value="CRITICAL">CRITICAL</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="inc-title">Incident Title</label>
+                            <input type="text" id="inc-title" class="form-control" placeholder="e.g. Major Pothole Hazard">
+                        </div>
+                        <div class="filter-group">
+                            <label for="inc-operator">Assigned Operator</label>
+                            <input type="text" id="inc-operator" class="form-control" placeholder="e.g. Officer_Sharma">
+                        </div>
+                        <div class="filter-group" style="grid-column: span 2;">
+                            <label for="inc-note">Initial Operator Note</label>
+                            <input type="text" id="inc-note" class="form-control" placeholder="Field unit dispatched for inspection">
+                        </div>
+                        <div class="filter-actions">
+                            <button type="submit" class="btn btn-primary">Create Incident</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="card-box">
+                    <div class="table-header">
+                        <div class="section-title">
+                            <h2>🚨 Real Incidents Command Directory</h2>
+                        </div>
+                        <div class="filter-actions">
+                            <select id="filter-inc-status" class="form-control-sm">
+                                <option value="">All Statuses</option>
+                                <option value="OPEN">OPEN</option>
+                                <option value="ACKNOWLEDGED">ACKNOWLEDGED</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="RESOLVED">RESOLVED</option>
+                                <option value="CLOSED">CLOSED</option>
+                            </select>
+                            <select id="filter-inc-severity" class="form-control-sm">
+                                <option value="">All Severities</option>
+                                <option value="LOW">LOW</option>
+                                <option value="MEDIUM">MEDIUM</option>
+                                <option value="HIGH">HIGH</option>
+                                <option value="CRITICAL">CRITICAL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table" id="incidents-table">
+                            <thead>
+                                <tr>
+                                    <th>Incident ID</th>
+                                    <th>Linked Event ID</th>
+                                    <th>Title</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Operator</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="incidents-table-body">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No incidents registered yet. Create an incident from a real event ID above.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 6: GIS MAP -->
+            <div id="tab-gis" class="tab-pane hidden">
+                <section class="gis-section card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+                            <h2>Geographic Information System (GIS) Cartography</h2>
+                        </div>
+                        <div class="gis-controls">
+                            <div class="view-toggle">
+                                <button id="btn-view-markers" class="btn-toggle active">Marker Map</button>
+                                <button id="btn-view-heatmap" class="btn-toggle">Heatmap Layer</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Honest GPS Banner -->
+                    <div class="gps-banner warning" id="gps-status-banner">
+                        <span class="banner-icon">⚠️</span>
+                        <span class="banner-text" id="gps-banner-text">Checking GPS telemetry availability...</span>
+                    </div>
+                    <div class="map-wrapper">
+                        <div id="map" class="leaflet-map-container"></div>
+                        <div class="heatmap-overlay hidden" id="heatmap-overlay">
+                            <div class="overlay-card">
+                                <div class="overlay-icon">🔥</div>
+                                <h3>Heatmap Unavailable</h3>
+                                <p id="heatmap-overlay-msg">Heatmap unavailable — 7,964 stored video telemetry events were captured without connected NMEA hardware GPS sensors.</p>
+                                <span class="overlay-badge">Strict Zero-Fabrication Policy</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 7: ANALYTICS -->
+            <div id="tab-analytics" class="tab-pane hidden">
+                <section class="card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>📈 System Analytics & Empirical Metrics</h2>
+                        </div>
+                    </div>
+                    <div class="metrics-grid mb-24">
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">Road Damage Telemetry Records</span>
+                                <h2 class="card-value">2,708</h2>
+                                <span class="card-subtext">Source: BUS-101 Dashcam</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="card-info">
+                                <span class="card-label">ANPR Telemetry Records</span>
+                                <h2 class="card-value">5,256</h2>
+                                <span class="card-subtext">Source: anpr.mp4 Stream</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 8: SYSTEM HEALTH -->
+            <div id="tab-health" class="tab-pane hidden">
+                <section class="card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>💻 Real-Time System Health Diagnostics</h2>
+                        </div>
+                    </div>
+                    <div class="health-grid">
+                        <div class="health-item">
+                            <span class="health-label">FastAPI Backend Service</span>
+                            <span class="health-value text-success" id="health-backend-status">ONLINE (http://127.0.0.1:8000)</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">SQLite Event Database</span>
+                            <span class="health-value text-success" id="health-db-status">CONNECTED (data/events.db - 7,964 Events)</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">Road Damage YOLOv8 Model</span>
+                            <span class="health-value text-success">READY (models/pothole.pt — SHA256 Verified)</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">ANPR YOLOv8 Detector</span>
+                            <span class="health-value text-success">READY (models/anpr/best.pt — SHA256 Verified)</span>
+                        </div>
+                        <div class="health-item">
+                            <span class="health-label">GPS Hardware Sensor</span>
+                            <span class="health-value text-warning">UNAVAILABLE (Offline Telemetry Stream)</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 9: REPORTS -->
+            <div id="tab-reports" class="tab-pane hidden">
+                <section class="card-box">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <h2>📥 Download Official Operations Reports</h2>
+                        </div>
+                    </div>
+                    <p class="text-secondary mb-24">Export verified database records directly in standard CSV or JSON format.</p>
+                    <div class="filter-actions">
+                        <button id="btn-export-csv" class="btn btn-primary">
+                            📄 Export Events CSV
+                        </button>
+                        <button id="btn-export-json" class="btn btn-secondary">
+                            { } Export Events JSON
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Event Detail Modal -->
+        <div class="modal-backdrop hidden" id="event-modal">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h3>Telemetry Event Details</h3>
+                        <span class="event-id-badge" id="modal-event-id">evt_0000</span>
+                    </div>
+                    <button class="modal-close" id="btn-close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-summary-grid">
+                        <div class="summary-item">
+                            <span class="item-label">Event Category</span>
+                            <span class="item-value" id="modal-event-type">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="item-label">Telemetry Source</span>
+                            <span class="item-value" id="modal-source">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="item-label">Detection Timestamp</span>
+                            <span class="item-value" id="modal-timestamp">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="item-label">GPS Coordinates</span>
+                            <span class="item-value" id="modal-gps">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="item-label">Model Confidence</span>
+                            <span class="item-value" id="modal-confidence">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="item-label">Ingestion Timestamp</span>
+                            <span class="item-value" id="modal-created-at">-</span>
+                        </div>
+                    </div>
+                    <div class="filter-actions mt-12 mb-12">
+                        <button id="btn-create-inc-from-modal" class="btn btn-primary btn-sm">🚨 Dispatch Incident From This Event</button>
+                    </div>
+                    <div class="payload-section">
+                        <h4>Original Raw Payload (Verbatim JSON)</h4>
+                        <pre class="json-viewer"><code id="modal-json-payload">{}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incident Update Modal -->
+        <div class="modal-backdrop hidden" id="incident-modal">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h3>Manage Incident & Status Transitions</h3>
+                        <span class="event-id-badge" id="inc-modal-id">inc_0000</span>
+                    </div>
+                    <button class="modal-close" id="btn-close-inc-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="update-incident-form">
+                        <div class="filter-group mb-12">
+                            <label for="inc-modal-status">Status Transition</label>
+                            <select id="inc-modal-status" class="form-control">
+                                <option value="OPEN">OPEN</option>
+                                <option value="ACKNOWLEDGED">ACKNOWLEDGED</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="RESOLVED">RESOLVED</option>
+                                <option value="CLOSED">CLOSED</option>
+                            </select>
+                        </div>
+                        <div class="filter-group mb-12">
+                            <label for="inc-modal-severity">Severity Level</label>
+                            <select id="inc-modal-severity" class="form-control">
+                                <option value="LOW">LOW</option>
+                                <option value="MEDIUM">MEDIUM</option>
+                                <option value="HIGH">HIGH</option>
+                                <option value="CRITICAL">CRITICAL</option>
+                            </select>
+                        </div>
+                        <div class="filter-group mb-12">
+                            <label for="inc-modal-operator">Operator ID / Name</label>
+                            <input type="text" id="inc-modal-operator" class="form-control">
+                        </div>
+                        <div class="filter-group mb-12">
+                            <label for="inc-modal-note">Add Operator Note</label>
+                            <input type="text" id="inc-modal-note" class="form-control" placeholder="Update note...">
+                        </div>
+                        <div class="filter-actions mt-16">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+
+                    <div class="mt-24">
+                        <h4>Operator Notes & Audit Trail</h4>
+                        <div id="inc-modal-history" class="json-viewer mt-8" style="max-height: 180px;">Loading notes...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>SIH 2026 Smart Road Monitoring Subsystem — Municipal Command Center Platform</p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
