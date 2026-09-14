@@ -128,9 +128,9 @@ The confusion matrix below demonstrates class localization across the 6 defect c
 #### Real Video Observation (`BUS-101`)
 On a 15-second, 375-frame sample dashcam video (`data/sample_videos/patholes.mp4`), the model observed **1,001 pothole detections** and **4 manhole detections**, producing 2,708 telemetry records stored in `data/events.db`.
 
-![Real Video Detection Output](potholes_info/screenshots/real_video/real_video_multi_pothole_01.jpg)
+![Road Damage Max Detections Output](docs/images/pothole_max_detections.jpg)
 
-*Figure 4: Real dashcam video frame showing multi-pothole detections.*
+*Figure 4: Real dashcam video frame exhibiting maximum multi-class road damage detections.*
 
 ---
 
@@ -141,12 +141,22 @@ On a 15-second, 375-frame sample dashcam video (`data/sample_videos/patholes.mp4
 - **Counting Methodology**: Aggregates unique tracked object IDs across 10-second rolling evaluation windows to compute road segment vehicle counts and congestion levels. Untracked raw detections are excluded to prevent double-counting stationary or slow-moving vehicles.
 - **Empirical Video Benchmark**: On a 24-second real sample video (`traffic_density_bridge.mp4`), ByteTrack tracked **91 unique vehicles** across 3 rolling windows.
 
+#### Vehicle Tracking & ByteTrack Multi-Object Counter
+![ByteTrack Vehicle Tracking Output](docs/images/vehicle_tracking_bytetrack.jpg)
+
+*Figure 5: ByteTrack real-time multi-vehicle tracking & continuous ID assignment across dense traffic.*
+
 ---
 
 ### 3. ANPR License Plate Localization Subsystem
 
 - **Model File**: [`models/anpr/best.pt`](models/anpr/best.pt) | **SHA256**: `d9584abdd286828d6ca0e504ace2c765dd7e66851647d8ba4ad03416f53ecf6a`
 - **Dataset**: 1,651 Indian license plate crop benchmark images.
+
+#### Real Video ANPR Localization Output
+![ANPR Plate Detection Output](docs/images/anpr_plate_detection.jpg)
+
+*Figure 6: Real-time license plate localization on video stream (`models/anpr/best.pt`).*
 
 #### Held-out Benchmark Test Metrics
 
@@ -160,17 +170,17 @@ On a 15-second, 375-frame sample dashcam video (`data/sample_videos/patholes.mp4
 #### ANPR Plate Localizer — Confusion Matrix
 ![ANPR Confusion Matrix](anpr/runs/anpr_detection_v1/confusion_matrix.png)
 
-*Figure 5: High-precision confusion matrix for the ANPR Plate Localizer model (`models/anpr/best.pt`).*
+*Figure 7: High-precision confusion matrix for the ANPR Plate Localizer model (`models/anpr/best.pt`).*
 
 #### ANPR Plate Localizer — Precision-Recall Curve
 ![ANPR PR Curve](anpr/runs/anpr_detection_v1/BoxPR_curve.png)
 
-*Figure 6: Precision-Recall curve demonstrating 98.04% mAP50 localization accuracy.*
+*Figure 8: Precision-Recall curve demonstrating 98.04% mAP50 localization accuracy.*
 
 #### ANPR Plate Localizer — Training & Validation Results
 ![ANPR Results Plot](anpr/runs/anpr_detection_v1/results.png)
 
-*Figure 7: Training & validation metrics for the ANPR plate detector.*
+*Figure 9: Training & validation metrics for the ANPR plate detector.*
 
 ---
 
