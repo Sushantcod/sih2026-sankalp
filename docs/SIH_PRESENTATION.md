@@ -5,17 +5,21 @@ This document outlines the authoritative 20-slide presentation deck structure fo
 ---
 
 ### Slide 1: Title Slide
-- **Title**: SIH 2026 Smart Road Monitoring & Intelligent Traffic Management System
-- **Subtitle**: AI-Powered Edge Computer Vision, Ingestion Backend & Municipal GIS Command Center
+- **Title**: SIH 2026 — AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet
+- **Problem Statement ID**: **26124** (Bharat Electronics Limited — BEL)
+- **Category & Theme**: Software | Smart Automation
+- **Subtitle**: Edge Computer Vision, Asynchronous Telemetry Ingestion & Municipal GIS Command Center
 - **Team**: Team Sankalp
 
-### Slide 2: Problem Statement
-- **Topic**: Manual, reactive road hazard inspection and traffic congestion in Indian municipalities.
-- **Current Challenges**: Potholes cause accidents; manual inspection is slow, expensive, and unscalable.
+### Slide 2: Problem Statement (SIH ID 26124 — BEL)
+- **Organization**: Bharat Electronics Limited (BEL)
+- **Core Challenge**: Urban buses carry multiple cameras, but footage is used only for post-incident recording. Cities rely on fixed CCTV (covers <10% of roads), slow manual inspections, and delayed citizen complaints.
+- **Goal**: Transform public transport buses into mobile urban sensing units for road damage, traffic density, pedestrian safety, and incident/offending vehicle tracking.
 
 ### Slide 3: Current Technical Deficiencies
-- Lack of automated real-time damage detection on public transit vehicles.
-- Siloed traffic monitoring without automated incident lifecycle management.
+- Fixed CCTV covers only intersections, missing 90% of road network between junctions.
+- Cloud-dependent systems stream raw video, causing bandwidth breakdown over cellular networks.
+- Lack of integrated platform combining road defects + ANPR + traffic density + incident dispatch.
 
 ### Slide 4: Proposed Solution
 - A unified edge-to-cloud AI telemetry platform featuring multi-class road damage detection, vehicle density tracking, ANPR, high-throughput backend ingestion, and an operational command center.

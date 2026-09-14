@@ -1,6 +1,11 @@
 # MASTER PLAN — Full Project Detail, Phase-by-Phase + Project Structure
 
-This document gives you, for **every phase**: the objective, exactly what to build, which repo/model/dataset to use, what to learn, the deliverable, time estimate, AND the exact folder/file structure that phase adds to your project. At the very end is the **full combined project structure** once all phases are done.
+### 📌 Smart India Hackathon (SIH 2026) Problem Statement Alignment
+- **Problem Statement ID**: **26124**
+- **Problem Title**: **AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet**
+- **Organization**: **Bharat Electronics Limited (BEL)**
+- **Category & Theme**: **Software | Smart Automation**
+- **Key Innovation**: Reuses existing public transport bus camera infrastructure as mobile sensing nodes across the city, processing video at the Edge (onboard) to send compact JSON alerts to a central command platform—eliminating the massive bandwidth cost of streaming raw video while covering 100% of urban transit corridors.
 
 ---
 

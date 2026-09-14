@@ -18,7 +18,13 @@ Verify that the output displays:
 
 ---
 
-## 2. Step-by-Step Demonstration Script (5-10 Minutes)
+## 2. Opening Elevator Pitch (30 Seconds)
+
+> **Judge Pitch**: *"Good morning judges. We are addressing **SIH Problem Statement 26124** by **Bharat Electronics Limited (BEL)**: 'AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet'. Today, cities spend millions installing static CCTVs that only monitor isolated junctions. We convert existing public bus fleets into mobile urban sensing units. By running Edge-AI computer vision directly on the bus, we process road damage, vehicle density, and ANPR locally—sending only lightweight JSON telemetry alerts to our Central Command Platform. This eliminates the cellular bandwidth cost of raw video while covering 100% of municipal transit routes daily."*
+
+---
+
+## 3. Step-by-Step Demonstration Script (5-10 Minutes)
 
 ### Step 1: Open Operations Command Center UI
 1. Navigate to `http://127.0.0.1:3000` in Google Chrome or Safari.
