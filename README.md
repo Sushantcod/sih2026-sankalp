@@ -151,12 +151,23 @@ The confusion matrix below demonstrates class localization across the 6 defect c
 
 *Figure 3: Loss curves and mAP evolution across training epochs.*
 
-#### Real Video Observation (`BUS-101`)
-On a 15-second, 375-frame sample dashcam video (`data/sample_videos/patholes.mp4`), the model observed **1,001 pothole detections** and **4 manhole detections**, producing 2,708 telemetry records stored in `data/events.db`.
+#### Real Video Observations & Real-World Dashcam Inference (`BUS-101`)
+On real-world urban video streams, the model detects potholes, alligator cracks, longitudinal cracks, manholes, and waterlogging in real time:
 
+##### 1. Pune City Monsoon Dashcam Stream (`Pune Road Condition Today...mp4`)
+![Pune City Monsoon Dashcam Pothole Detection](docs/images/pune_road_pothole_detection.jpg)
+
+*Figure 4A: Real-time road damage detection on Pune city monsoon dashcam video stream.*
+
+##### 2. Multi-Class Road Defect Stream (`pothole_road_damage.mp4`)
+![Pothole Road Damage Multi-Detection Frame](docs/images/pothole_road_damage_detection.jpg)
+
+*Figure 4B: High-density frame exhibiting 11 simultaneous road defect detections.*
+
+##### 3. Dashcam Video Stream (`patholes.mp4`)
 ![Road Damage Max Detections Output](docs/images/pothole_max_detections.jpg)
 
-*Figure 4: Real dashcam video frame exhibiting maximum multi-class road damage detections.*
+*Figure 4C: Real dashcam video frame exhibiting multi-class road damage detections.*
 
 ---
 
