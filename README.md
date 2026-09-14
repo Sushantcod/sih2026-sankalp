@@ -69,62 +69,68 @@
 
 > **🎯 Mission**: Convert standard public transport vehicles into **mobile sensing platforms** that continuously monitor road conditions, traffic patterns, and infrastructure health — providing municipal authorities with **real-time situational awareness** for faster incident response and data-driven urban planning.
 
-### 🔴 The Urban Challenges & Problem Context
+### 🔴 The Problem
 
-Modern urban centers face severe operational bottlenecks in maintaining transportation infrastructure:
-
-1. **Spatial Blind Spots of Fixed CCTVs**: Stationary traffic cameras only observe specific intersections, leaving over 90% of urban road network corridors unmonitored.
-2. **Delayed & Costly Road Surveys**: Municipal road damage assessments (potholes, structural cracking) rely on periodic, manual road surveys that are slow, labor-intensive, and reactive — leading to vehicle damage and safety hazards.
-3. **Cloud Bandwidth & Network Bottlenecks**: Continuously streaming high-definition video from hundreds of city buses to centralized cloud servers is economically infeasible and overburdens 4G/5G mobile bandwidth.
-4. **Siloed Municipal Action**: Automated detection of road hazards rarely feeds directly into an accountable municipal workflow, leaving maintenance teams without actionable, deduplicated dispatch tickets.
+1. **Fixed Camera Blind Spots**: Stationary traffic cameras only see intersections, leaving >90% of city roads unmonitored.
+2. **Slow, Manual Inspections**: Finding road defects (potholes, cracks) currently requires manual surveys that take weeks.
+3. **Bandwidth Overload**: Streaming live video from hundreds of city buses to the cloud is too expensive and overloads cellular networks.
+4. **No Automated Action**: Detected issues are rarely converted into direct, trackable repair tickets for field teams.
 
 ---
 
-### 💡 Our Proposed Solution: End-to-End System Approach
+### 💡 The Solution: Mobile Urban Sensing & Edge Intelligence
 
-**Team Sankalp** has designed and implemented a unified, edge-to-cloud **Mobile Urban Intelligence Platform** that addresses these challenges through five core innovations:
+We turn existing public transport buses into **intelligent mobile sensing units** that automatically monitor city roads during their daily routes.
 
+```mermaid
+flowchart LR
+    subgraph S1["🚌 1. Mobile Sensing"]
+        direction TB
+        A1["Public Transit Buses<br/>Covering Daily Routes"]
+        A2["Dashcam Cameras<br/>Front & Side Feeds"]
+        A1 --> A2
+    end
+
+    subgraph S2["⚡ 2. Edge AI Detection"]
+        direction TB
+        B1["5 YOLOv8 Vision Models<br/>(90.23 FPS Real-Time)"]
+        B2["Detects Defects, Signs,<br/>Vehicles & Pedestrians"]
+        B1 --> B2
+    end
+
+    subgraph S3["📡 3. Smart Telemetry"]
+        direction TB
+        C1["Sends JSON Alerts Only<br/>(No Heavy Video Stream)"]
+        C2[">99.5% Bandwidth Savings<br/>Over 4G/5G Cellular"]
+        C1 --> C2
+    end
+
+    subgraph S4["🏢 4. Municipal Action"]
+        direction TB
+        D1["FastAPI Backend &<br/>Smart Deduplication"]
+        D2["Automated Incident Lifecycle<br/>(OPEN ➔ DISPATCH ➔ RESOLVE)"]
+        D3["Live GIS Command Center<br/>(Leaflet Interactive Map)"]
+        D1 --> D2 --> D3
+    end
+
+    S1 -->|Live Video| S2
+    S2 -->|Detections| S3
+    S3 -->|JSON Events| S4
+
+    style S1 fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff
+    style S2 fill:#1e1b4b,stroke:#8b5cf6,stroke-width:2px,color:#fff
+    style S3 fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#fff
+    style S4 fill:#3b0764,stroke:#a855f7,stroke-width:2px,color:#fff
 ```
-┌─────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 PROPOSED SOLUTION LIFECYCLE                                 │
-│                                                                                             │
-│  🚌 Mobile Bus Fleet   ──►  ⚡ Edge AI Inference   ──►  📡 JSON Telemetry Events (No Video) │
-│  (Opportunistic Sensor)     (5 YOLOv8 Models @ 90FPS)    (>99.5% Bandwidth Reduction)       │
-│                                                                        │                    │
-│                                                                        ▼                    │
-│  🖥️ GIS Command Center  ◄──  📋 Incident Lifecycle ◄──  🔒 Central Ingestion & Dedup        │
-│  (Leaflet Map + Analytics)   (OPEN → DISPATCH → CLOSED)   (FastAPI + Content Hash Guard)     │
-└─────────────────────────────────────────────────────────────────────────────────────────────┘
-```
 
-1. **Opportunistic Fleet-Based Mobile Sensing**:
-   - Instead of expensive static sensor networks, the platform transforms existing public transit buses into pervasive mobile sensing probes.
-   - City buses naturally traverse urban arterial routes multiple times daily, achieving comprehensive spatial and temporal coverage without additional driving personnel.
+#### How It Solves the Problem in 4 Simple Steps:
 
-2. **Edge Computing & Multi-Subsystem Computer Vision**:
-   - Computer vision inference runs **locally at the vehicle edge**, executing 5 specialized YOLOv8 detection pipelines:
-     - **Road Damage**: Multi-class detection of potholes, alligator cracks, longitudinal cracks, transverse cracks, manholes, and waterlogging.
-     - **Traffic Analytics**: ByteTrack multi-object tracking across rolling evaluation windows for congestion classification.
-     - **ANPR**: License plate localization and optical character recognition.
-     - **Pedestrian Safety**: Crosswalk zone identification and pedestrian proximity monitoring.
-     - **Infrastructure**: 57-class Indian traffic sign classification and compliance monitoring.
-   - Achieves real-time edge processing speeds up to **90.23 FPS** on Apple Silicon hardware.
-
-3. **Bandwidth-Optimized Event Telemetry**:
-   - Rather than streaming high-bitrate video feeds over cellular networks, edge nodes extract and transmit **only structured JSON telemetry payloads** containing timestamps, defect classifications, confidence scores, and bounding boxes.
-   - This delivers a **>99.5% reduction in data transmission costs**, enabling continuous operations even over constrained mobile networks.
-
-4. **Deterministic Ingestion & Deduplication**:
-   - Central FastAPI backend utilizes deterministic primary keys and SHA256 content hashing to deduplicate identical defects captured across successive frames or by multiple passing buses.
-   - Prevents database bloating while preserving accurate defect persistence and recurring occurrence tracking.
-
-5. **State-Machine Incident Lifecycle & Municipal Actionability**:
-   - Automated conversion of high-severity telemetry events into trackable municipal maintenance incidents.
-   - A strict 5-stage state machine (`OPEN` $\rightarrow$ `ACKNOWLEDGED` $\rightarrow$ `DISPATCHED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `RESOLVED` $\rightarrow$ `CLOSED`) enforces accountable operator assignment, progress logging, and complete audit history.
-
-6. **Interactive GIS Command Center & Empirical Analytics**:
-   - Dark-glassmorphism web console providing city engineers with real-time Leaflet cartographic visualization, KPI counters, event inspectors, and exportable analytics.
-   - Transparent data integrity protocol: strictly distinguishes real telemetry from unavailable GPS signals, guaranteeing zero fabricated data.
+| Step | How It Works | Real-World Benefit |
+| :--- | :--- | :--- |
+| **1. Mobile Sensing** | Public buses naturally travel throughout the city every day. | **100% City Coverage** with zero extra driver or fuel costs. |
+| **2. Edge AI Vision** | 5 YOLOv8 models process frames inside the vehicle at **90+ FPS**. | **Instant Detection** of potholes, cracks, signs, plates, and pedestrians. |
+| **3. Smart Telemetry** | Transmits only structured JSON event payloads (coordinates, labels, confidence). | **>99.5% Bandwidth Saved** compared to streaming raw video. |
+| **4. Municipal Action** | Backend deduplicates repeated detections and generates actionable tickets. | **End-to-End Workflow** from road defect to dispatched repair team. |
 
 ---
 
